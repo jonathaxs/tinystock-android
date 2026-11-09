@@ -2,8 +2,12 @@
 <!-- Textos so do Android. Os textos vindos do iOS ficam em strings_ios.xml (gerado); uma chave definida
      aqui substitui a de la, para adaptar o texto ao Android. -->
 <resources>
-    <string name="preview_subtitle">Versão Android em construção</string>
-    <string name="preview_style_section">Estilo</string>
+    <string name="coming_soon_title">Em construção</string>
+    <string name="coming_soon_message">Esta tela ainda está sendo trazida da versão do iPhone.</string>
+
+    <string name="backup_error_legacy">Este backup é de uma versão antiga do TinyStock. Abra no iPhone, exporte de novo e importe o arquivo novo.</string>
+
+    <string name="welcome_about_icloud_desc">Seus dados ficam no aparelho, com backups que você guarda onde quiser.</string>
 
     <string name="a11y_decrease">Diminuir</string>
     <string name="a11y_increase">Aumentar</string>

@@ -2,6 +2,8 @@ package com.jonathaxs.tinystock.ui.icons
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
@@ -43,6 +45,82 @@ object AppIcons {
             close()
         }
     }
+
+    /** Equivale ao "shippingbox" do iOS: caixa em perspectiva, so o contorno. */
+    val Box: ImageVector by lazy {
+        strokeIcon("Box") {
+            moveTo(12f, 2.8f)
+            lineTo(20.2f, 7.4f)
+            verticalLineTo(16.6f)
+            lineTo(12f, 21.2f)
+            lineTo(3.8f, 16.6f)
+            verticalLineTo(7.4f)
+            close()
+            moveTo(3.8f, 7.4f)
+            lineTo(12f, 12f)
+            lineTo(20.2f, 7.4f)
+            moveTo(12f, 12f)
+            verticalLineTo(21.2f)
+            moveTo(7.9f, 5.1f)
+            lineTo(16.1f, 9.7f)
+        }
+    }
+
+    /** Equivale ao "square.stack.3d.up" do iOS: camadas empilhadas (variacoes). */
+    val Layers: ImageVector by lazy {
+        strokeIcon("Layers") {
+            moveTo(12f, 3f)
+            lineTo(21f, 8f)
+            lineTo(12f, 13f)
+            lineTo(3f, 8f)
+            close()
+            moveTo(3f, 12f)
+            lineTo(12f, 17f)
+            lineTo(21f, 12f)
+            moveTo(3f, 16f)
+            lineTo(12f, 21f)
+            lineTo(21f, 16f)
+        }
+    }
+
+    /** Equivale ao "storefront" do iOS: toldo e porta. */
+    val Storefront: ImageVector by lazy {
+        strokeIcon("Storefront") {
+            moveTo(4.5f, 4f)
+            horizontalLineTo(19.5f)
+            lineTo(21f, 9f)
+            horizontalLineTo(3f)
+            close()
+            moveTo(5f, 9f)
+            verticalLineTo(20f)
+            horizontalLineTo(19f)
+            verticalLineTo(9f)
+            moveTo(10f, 20f)
+            verticalLineTo(14.5f)
+            horizontalLineTo(14f)
+            verticalLineTo(20f)
+        }
+    }
+
+    private fun strokeIcon(
+        name: String,
+        pathBuilder: androidx.compose.ui.graphics.vector.PathBuilder.() -> Unit,
+    ): ImageVector = ImageVector.Builder(
+        name = name,
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f,
+    ).apply {
+        path(
+            fill = null,
+            stroke = SolidColor(Color.Black),
+            strokeLineWidth = 1.9f,
+            strokeLineCap = StrokeCap.Round,
+            strokeLineJoin = StrokeJoin.Round,
+            pathBuilder = pathBuilder,
+        )
+    }.build()
 
     private fun icon(
         name: String,

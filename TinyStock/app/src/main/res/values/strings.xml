@@ -4,9 +4,15 @@
 <resources>
     <string name="app_name" translatable="false">TinyStock</string>
 
-    <!-- Tela provisoria do esqueleto (A0). Sai quando a Inicio for portada. -->
-    <string name="preview_subtitle">Android version under construction</string>
-    <string name="preview_style_section">Style</string>
+    <!-- Telas ainda nao portadas do iOS. Saem quando cada uma chegar. -->
+    <string name="coming_soon_title">Coming soon</string>
+    <string name="coming_soon_message">This screen is still being brought over from the iPhone version.</string>
+
+    <!-- Backup v1 (anterior as lojas): so o iOS restaura. -->
+    <string name="backup_error_legacy">This backup is from an older version of TinyStock. Open it on the iPhone, export it again and import the new file.</string>
+
+    <!-- Sem iCloud no Android: os dados ficam no aparelho e o backup e um arquivo. -->
+    <string name="welcome_about_icloud_desc">Your data stays on this device, with backups you save wherever you like.</string>
 
     <!-- Acessibilidade dos botoes redondos - / + -->
     <string name="a11y_decrease">Decrease</string>

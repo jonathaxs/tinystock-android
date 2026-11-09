@@ -506,7 +506,6 @@
     <string name="welcome_about_stores_title">Várias lojas</string>
     <string name="welcome_about_stores_desc">Cada negócio com produtos, pedidos e relatórios separados.</string>
     <string name="welcome_about_icloud_title">Seus dados com você</string>
-    <string name="welcome_about_icloud_desc">Sincroniza no seu iCloud e permite backups que você controla.</string>
     <string name="welcome_step_store_title">Sua loja</string>
     <string name="welcome_step_store_subtitle">Como sua loja se chama? Se preferir, pule e mude depois em Ajustes.</string>
     <string name="welcome_store_field">Nome da loja</string>

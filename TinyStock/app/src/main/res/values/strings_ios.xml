@@ -506,7 +506,6 @@
     <string name="welcome_about_stores_title">Multiple stores</string>
     <string name="welcome_about_stores_desc">Each business with its own products, orders and reports.</string>
     <string name="welcome_about_icloud_title">Your data stays yours</string>
-    <string name="welcome_about_icloud_desc">Syncs with your iCloud and lets you keep your own backups.</string>
     <string name="welcome_step_store_title">Your Store</string>
     <string name="welcome_step_store_subtitle">What is your store called? You can skip this and change it later in Settings.</string>
     <string name="welcome_store_field">Store name</string>
