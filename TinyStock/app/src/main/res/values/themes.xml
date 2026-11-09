@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tema da janela antes do Compose desenhar (e da tela de abertura). As cores de verdade ficam no
+         TinyStockTheme; aqui so o fundo, igual ao do app, para nao piscar outra cor. -->
+    <style name="Theme.TinyStock" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:windowSplashScreenBackground">@color/window_background</item>
+    </style>
+</resources>

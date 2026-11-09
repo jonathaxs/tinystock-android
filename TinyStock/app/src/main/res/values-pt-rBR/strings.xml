@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preview_subtitle">Versão Android em construção</string>
+    <string name="preview_style_section">Estilo</string>
+
+    <string name="tab_reports">Relatórios</string>
+    <string name="tab_sales">Calendário</string>
+    <string name="tab_settings">Ajustes</string>
+    <string name="home_box_info_units">Em estoque</string>
+    <string name="welcome_button_start">Começar</string>
+    <string name="welcome_about_products_title">Produtos e estoque</string>
+    <string name="welcome_about_products_desc">Foto, variações, preço, custo e o estoque de cada variação.</string>
+    <string name="welcome_about_orders_title">Pedidos no calendário</string>
+    <string name="welcome_about_orders_desc">Vendas de pronta entrega ou sob encomenda, acompanhando produção e envio.</string>
+    <string name="welcome_about_reports_title">Relatórios</string>
+    <string name="welcome_about_reports_desc">Receita, custos, taxas e lucro por período.</string>
+
+    <string name="a11y_decrease">Diminuir</string>
+    <string name="a11y_increase">Aumentar</string>
+    <string name="a11y_delete">Apagar</string>
+</resources>

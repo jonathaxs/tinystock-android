@@ -1,0 +1,49 @@
+# =========================================================
+#  TinyStock (Android) .gitignore
+#  Padroes sem "/" inicial valem recursivamente (cobrem TinyStock/, app/, core/)
+# =========================================================
+
+# --- macOS ---
+.DS_Store
+
+# --- Gradle ---
+.gradle/
+build/
+captures/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# --- Kotlin ---
+.kotlin/
+
+# --- Android Studio / IntelliJ ---
+*.iml
+.idea/
+
+# --- SDK local / config da maquina ---
+# local.properties guarda o caminho do Android SDK nesta maquina: nunca versionar
+local.properties
+
+# --- Assinatura do app (nunca versionar) ---
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+
+# --- Saidas de build ---
+*.apk
+*.aab
+*.ap_
+*.aar
+*.dex
+*.class
+output.json
+
+# --- NDK / C++ ---
+.externalNativeBuild/
+.cxx/
+
+# --- Logs / temporarios ---
+*.log
+*.hprof
