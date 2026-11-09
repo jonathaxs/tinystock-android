@@ -1,23 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Textos so do Android. Os textos vindos do iOS ficam em strings_ios.xml (gerado); uma chave definida
+     aqui substitui a de la, para adaptar o texto ao Android. -->
 <resources>
     <string name="app_name" translatable="false">TinyStock</string>
 
     <!-- Tela provisoria do esqueleto (A0). Sai quando a Inicio for portada. -->
     <string name="preview_subtitle">Android version under construction</string>
     <string name="preview_style_section">Style</string>
-
-    <!-- Mesmas chaves do iOS, com "_" no lugar de "." -->
-    <string name="tab_reports">Reports</string>
-    <string name="tab_sales">Calendar</string>
-    <string name="tab_settings">Settings</string>
-    <string name="home_box_info_units">In stock</string>
-    <string name="welcome_button_start">Get Started</string>
-    <string name="welcome_about_products_title">Products and stock</string>
-    <string name="welcome_about_products_desc">Photos, variants, price, cost and the stock of each variant.</string>
-    <string name="welcome_about_orders_title">Orders on a calendar</string>
-    <string name="welcome_about_orders_desc">Ready-to-ship or made-to-order sales, tracking production and shipping.</string>
-    <string name="welcome_about_reports_title">Reports</string>
-    <string name="welcome_about_reports_desc">Revenue, costs, fees and profit by period.</string>
 
     <!-- Acessibilidade dos botoes redondos - / + -->
     <string name="a11y_decrease">Decrease</string>
