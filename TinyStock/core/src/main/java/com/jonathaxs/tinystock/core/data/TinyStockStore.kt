@@ -55,6 +55,12 @@ interface TinyStockStore {
     suspend fun saveOrder(order: SalesOrder)
     suspend fun deleteOrder(id: UUID)
 
+    // Tudo de todas as lojas, para o backup (equivale ao FetchDescriptor sem filtro do iOS)
+    suspend fun allProducts(): List<Product>
+    suspend fun allVariants(): List<ProductVariant>
+    suspend fun allMovements(): List<StockMovement>
+    suspend fun allOrders(): List<SalesOrder>
+
     // Observacao para as telas
     fun observeStores(): Flow<List<StoreProfile>>
     fun observeProducts(storeID: UUID): Flow<List<Product>>

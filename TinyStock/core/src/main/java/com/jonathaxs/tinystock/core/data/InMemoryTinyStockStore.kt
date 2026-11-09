@@ -97,6 +97,11 @@ class InMemoryTinyStockStore : TinyStockStore {
     override suspend fun saveOrder(order: SalesOrder) { orders[order.id] = order; changed() }
     override suspend fun deleteOrder(id: UUID) { orders.remove(id); changed() }
 
+    override suspend fun allProducts(): List<Product> = products.values.toList()
+    override suspend fun allVariants(): List<ProductVariant> = variants.values.toList()
+    override suspend fun allMovements(): List<StockMovement> = movements.values.toList()
+    override suspend fun allOrders(): List<SalesOrder> = orders.values.toList()
+
     override fun observeStores(): Flow<List<StoreProfile>> = observe { stores.values.toList() }
     override fun observeProducts(storeID: UUID): Flow<List<Product>> =
         observe { products.values.filter { it.storeID == storeID } }

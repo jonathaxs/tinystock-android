@@ -28,6 +28,9 @@ interface StoreDao {
 /** Acesso a tabela `products`. */
 @Dao
 interface ProductDao {
+    @Query("SELECT * FROM products")
+    suspend fun all(): List<ProductEntity>
+
     @Query("SELECT * FROM products WHERE storeID = :storeID")
     suspend fun byStore(storeID: UUID): List<ProductEntity>
 
@@ -47,6 +50,9 @@ interface ProductDao {
 /** Acesso a tabela `variants`. */
 @Dao
 interface VariantDao {
+    @Query("SELECT * FROM variants")
+    suspend fun all(): List<VariantEntity>
+
     @Query("SELECT * FROM variants WHERE storeID = :storeID")
     suspend fun byStore(storeID: UUID): List<VariantEntity>
 
@@ -66,6 +72,9 @@ interface VariantDao {
 /** Acesso a tabela `stock_movements`. */
 @Dao
 interface StockMovementDao {
+    @Query("SELECT * FROM stock_movements")
+    suspend fun all(): List<StockMovementEntity>
+
     @Query("SELECT * FROM stock_movements WHERE storeID = :storeID")
     suspend fun byStore(storeID: UUID): List<StockMovementEntity>
 
@@ -85,6 +94,9 @@ interface StockMovementDao {
 /** Acesso as tabelas `sales_orders` e `sales_order_items`. A observacao fica no RoomTinyStockStore. */
 @Dao
 interface SalesOrderDao {
+    @Query("SELECT * FROM sales_orders")
+    suspend fun all(): List<SalesOrderEntity>
+
     @Query("SELECT * FROM sales_orders WHERE storeID = :storeID")
     suspend fun byStore(storeID: UUID): List<SalesOrderEntity>
 
@@ -96,6 +108,9 @@ interface SalesOrderDao {
 
     @Query("DELETE FROM sales_orders WHERE id = :id")
     suspend fun delete(id: UUID)
+
+    @Query("SELECT * FROM sales_order_items")
+    suspend fun allItems(): List<SalesOrderItemEntity>
 
     @Query("SELECT * FROM sales_order_items WHERE storeID = :storeID")
     suspend fun itemsByStore(storeID: UUID): List<SalesOrderItemEntity>

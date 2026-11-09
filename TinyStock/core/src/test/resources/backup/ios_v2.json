@@ -1,0 +1,148 @@
+{
+  "exportedAt" : 1789000000.125,
+  "orders" : [
+    {
+      "buyerName" : "Joao",
+      "cancellationReason" : "",
+      "channel" : "futureChannel",
+      "channelFeeAmount" : 7.98,
+      "channelFeePercentage" : 10,
+      "completedAt" : 1789000000.125,
+      "createdAt" : 1789000000.125,
+      "customChannelName" : "Canal futuro",
+      "externalReference" : "ABC",
+      "fulfillment" : "futureFulfillment",
+      "id" : "19000000-0000-4000-8000-000000000003",
+      "items" : [
+        {
+          "id" : "1A000000-0000-4000-8000-000000000004",
+          "position" : 0,
+          "productID" : "C3000000-0000-4000-8000-00000000000C",
+          "productName" : "Caneca",
+          "quantity" : 2,
+          "storeID" : "A1000000-0000-4000-8000-00000000000A",
+          "unitCost" : 10.2,
+          "unitPrice" : 39.9,
+          "variantID" : "E5000000-0000-4000-8000-00000000000E",
+          "variantName" : "Branca"
+        }
+      ],
+      "note" : "Observacao",
+      "orderedAt" : 1789000000.125,
+      "producedAt" : 1789000000.125,
+      "productionDueAt" : 1789000000.125,
+      "productionStartedAt" : 1789000000.125,
+      "shippedAt" : 1789000000.125,
+      "shippingDueAt" : 1789000000.125,
+      "status" : "futureStatus",
+      "storeID" : "A1000000-0000-4000-8000-00000000000A",
+      "trackingCode" : "TRACK",
+      "updatedAt" : 1789000000.125
+    }
+  ],
+  "products" : [
+    {
+      "category" : "",
+      "costPrice" : 10.2,
+      "createdAt" : 1789000000.125,
+      "id" : "C3000000-0000-4000-8000-00000000000C",
+      "imageData" : "\/\/\/\/AQ==",
+      "minimumStock" : 0,
+      "name" : "Caneca",
+      "quantity" : 0,
+      "salePrice" : 39.9,
+      "storeID" : "A1000000-0000-4000-8000-00000000000A",
+      "updatedAt" : 1789000000.125
+    },
+    {
+      "category" : "Antiga",
+      "costPrice" : 5,
+      "createdAt" : 1789000000.125,
+      "id" : "D4000000-0000-4000-8000-00000000000D",
+      "minimumStock" : 1,
+      "name" : "Produto arquivado",
+      "quantity" : 3,
+      "salePrice" : 12,
+      "storeID" : "B2000000-0000-4000-8000-00000000000B",
+      "updatedAt" : 1789000000.125
+    }
+  ],
+  "sales" : [
+
+  ],
+  "selectedStoreID" : "A1000000-0000-4000-8000-00000000000A",
+  "stockMovements" : [
+    {
+      "balanceAfter" : 7,
+      "createdAt" : 1789000000.125,
+      "id" : "17000000-0000-4000-8000-000000000001",
+      "kind" : "entry",
+      "note" : "Entrada",
+      "productID" : "C3000000-0000-4000-8000-00000000000C",
+      "quantityDelta" : 7,
+      "reversedAt" : 1789000000.125,
+      "storeID" : "A1000000-0000-4000-8000-00000000000A",
+      "variantID" : "E5000000-0000-4000-8000-00000000000E"
+    },
+    {
+      "balanceAfter" : 7,
+      "createdAt" : 1789000000.125,
+      "id" : "18000000-0000-4000-8000-000000000002",
+      "kind" : "futureMovement",
+      "note" : "Futuro",
+      "productID" : "C3000000-0000-4000-8000-00000000000C",
+      "quantityDelta" : 1,
+      "referenceID" : "19000000-0000-4000-8000-000000000003",
+      "reversedMovementID" : "17000000-0000-4000-8000-000000000001",
+      "storeID" : "A1000000-0000-4000-8000-00000000000A",
+      "variantID" : "E5000000-0000-4000-8000-00000000000E"
+    }
+  ],
+  "stores" : [
+    {
+      "createdAt" : 1789000000.125,
+      "id" : "A1000000-0000-4000-8000-00000000000A",
+      "imageData" : "Avv\/",
+      "isArchived" : false,
+      "name" : "Loja ativa ção",
+      "sortOrder" : 2,
+      "updatedAt" : 1789000000.625,
+      "wasArchivedBeforeTrash" : false
+    },
+    {
+      "archivedAt" : 1789000000.125,
+      "createdAt" : 1789000000.125,
+      "id" : "B2000000-0000-4000-8000-00000000000B",
+      "isArchived" : true,
+      "name" : "Loja arquivada",
+      "sortOrder" : 7,
+      "trashedAt" : 1789000001.125,
+      "updatedAt" : 1789000000.125,
+      "wasArchivedBeforeTrash" : true
+    }
+  ],
+  "variants" : [
+    {
+      "createdAt" : 1789000000.125,
+      "id" : "E5000000-0000-4000-8000-00000000000E",
+      "imageData" : "Cgs=",
+      "isDefault" : false,
+      "name" : "Branca",
+      "productID" : "C3000000-0000-4000-8000-00000000000C",
+      "quantity" : 7,
+      "storeID" : "A1000000-0000-4000-8000-00000000000A",
+      "updatedAt" : 1789000000.125
+    },
+    {
+      "createdAt" : 1789000000.125,
+      "id" : "F6000000-0000-4000-8000-00000000000F",
+      "isDefault" : true,
+      "name" : "__tinystock_default__",
+      "productID" : "D4000000-0000-4000-8000-00000000000D",
+      "quantity" : 1,
+      "storeID" : "B2000000-0000-4000-8000-00000000000B",
+      "updatedAt" : 1789000000.125
+    }
+  ],
+  "version" : 2
+}

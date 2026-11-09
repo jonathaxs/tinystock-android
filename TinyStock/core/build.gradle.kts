@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.android.library)
     // Gera o codigo do Room (DAOs e banco).
     alias(libs.plugins.ksp)
+    // Leitura e gravacao do backup JSON.
+    alias(libs.plugins.kotlin.serialization)
 }
 
 ksp {
@@ -32,7 +34,8 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     // Preferencias do app (equivale ao UserDefaults do iOS).
     implementation(libs.androidx.datastore.preferences)
-    // kotlinx.serialization entra na A3 (backup).
+    // Backup JSON compativel com o do iOS.
+    implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)
     // Testes do Room e do DataStore rodam no emulador (connectedDebugAndroidTest).
     androidTestImplementation(libs.androidx.junit)

@@ -95,6 +95,19 @@ class RoomTinyStockStore(
         }
     }
 
+    override suspend fun allProducts(): List<Product> = productDao.all().map { it.toModel() }
+
+    override suspend fun allVariants(): List<ProductVariant> = variantDao.all().map { it.toModel() }
+
+    override suspend fun allMovements(): List<StockMovement> = stockMovementDao.all().map { it.toModel() }
+
+    override suspend fun allOrders(): List<SalesOrder> = db.withTransaction {
+        val itemsByOrder = salesOrderDao.allItems().groupBy { it.orderID }
+        salesOrderDao.all().map { entity ->
+            entity.toModel(itemsByOrder[entity.id].orEmpty().map { it.toModel() })
+        }
+    }
+
     override suspend fun order(id: UUID): SalesOrder? = db.withTransaction {
         val entity = salesOrderDao.byId(id) ?: return@withTransaction null
         val items = salesOrderDao.itemsByOrder(id).map { it.toModel() }
