@@ -1,6 +1,13 @@
 plugins {
     // AGP 9 traz o Kotlin embutido: nao aplicar o plugin Kotlin separado.
     alias(libs.plugins.android.library)
+    // Gera o codigo do Room (DAOs e banco).
+    alias(libs.plugins.ksp)
+}
+
+ksp {
+    // O esquema de cada versao do banco fica no repo, para escrever as migracoes depois.
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 android {
@@ -19,8 +26,16 @@ android {
 }
 
 dependencies {
-    // Os servicos sao suspend: o armazenamento real (Room, na A2) grava fora da thread principal.
+    // Os servicos sao suspend: o armazenamento real (Room) grava fora da thread principal.
     implementation(libs.kotlinx.coroutines.android)
-    // Room, DataStore e kotlinx.serialization entram nas levas A2 e A3, quando forem usados.
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    // Preferencias do app (equivale ao UserDefaults do iOS).
+    implementation(libs.androidx.datastore.preferences)
+    // kotlinx.serialization entra na A3 (backup).
     testImplementation(libs.junit)
+    // Testes do Room e do DataStore rodam no emulador (connectedDebugAndroidTest).
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.core)
 }

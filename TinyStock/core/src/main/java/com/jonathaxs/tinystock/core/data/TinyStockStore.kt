@@ -5,6 +5,7 @@ import com.jonathaxs.tinystock.core.model.ProductVariant
 import com.jonathaxs.tinystock.core.model.SalesOrder
 import com.jonathaxs.tinystock.core.model.StockMovement
 import com.jonathaxs.tinystock.core.model.StoreProfile
+import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
 /**
@@ -17,6 +18,8 @@ import java.util.UUID
  * - Pedido e gravado e lido inteiro, com as linhas ([SalesOrder.items]).
  * - [inTransaction] grava tudo ou nada: se o bloco lancar excecao, nenhuma mudanca dele fica. Pode
  *   ser aninhado; so o mais externo confirma.
+ * - Os `observe` emitem a lista atual ao serem coletados e de novo a cada mudanca confirmada (equivalem
+ *   ao `@Query` do SwiftUI). Sao o que as telas usam; os servicos usam as funcoes suspend.
  */
 interface TinyStockStore {
 
@@ -51,4 +54,11 @@ interface TinyStockStore {
     suspend fun order(id: UUID): SalesOrder?
     suspend fun saveOrder(order: SalesOrder)
     suspend fun deleteOrder(id: UUID)
+
+    // Observacao para as telas
+    fun observeStores(): Flow<List<StoreProfile>>
+    fun observeProducts(storeID: UUID): Flow<List<Product>>
+    fun observeVariants(storeID: UUID): Flow<List<ProductVariant>>
+    fun observeMovements(storeID: UUID): Flow<List<StockMovement>>
+    fun observeOrders(storeID: UUID): Flow<List<SalesOrder>>
 }

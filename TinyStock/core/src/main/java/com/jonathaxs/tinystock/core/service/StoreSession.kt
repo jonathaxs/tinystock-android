@@ -7,10 +7,13 @@ import java.time.Instant
 import java.time.ZoneId
 import java.util.UUID
 
-/** Leitura e gravacao do id da loja selecionada (substitui o `UserDefaults` do iOS). */
+/**
+ * Leitura e gravacao do id da loja selecionada (substitui o `UserDefaults` do iOS). A versao real usa
+ * DataStore (`AppPreferences`), por isso as funcoes sao suspend.
+ */
 interface SelectedStoreStorage {
-    fun load(): UUID?
-    fun save(id: UUID)
+    suspend fun load(): UUID?
+    suspend fun save(id: UUID)
 }
 
 /** Armazenamento em memoria da loja selecionada para testes e previas. */
@@ -20,16 +23,17 @@ class InMemorySelectedStoreStorage(
 
     private var selectedStoreID: UUID? = initialStoreID
 
-    override fun load(): UUID? = selectedStoreID
+    override suspend fun load(): UUID? = selectedStoreID
 
-    override fun save(id: UUID) {
+    override suspend fun save(id: UUID) {
         selectedStoreID = id
     }
 }
 
 /**
  * Mantem e grava a loja selecionada. Porte do `StoreSession` do iOS, sem `bootstrapForCloudSync` e
- * `reconcileCloudChanges` (exclusivos do CloudKit).
+ * `reconcileCloudChanges` (exclusivos do CloudKit). Diferente do iOS, o construtor nao grava (gravar e
+ * suspend); quem grava a selecao inicial e o [bootstrap].
  */
 class StoreSession(
     selectedStoreID: UUID,
@@ -39,18 +43,10 @@ class StoreSession(
     var selectedStoreID: UUID = selectedStoreID
         private set
 
-    init {
-        persistSelection()
-    }
-
     /** Troca a selecao somente para uma loja ativa. */
-    fun select(store: StoreProfile) {
+    suspend fun select(store: StoreProfile) {
         ensure(store.isActive) { StoreProfileError.ArchivedStore }
         selectedStoreID = store.id
-        persistSelection()
-    }
-
-    private fun persistSelection() {
         storage.save(selectedStoreID)
     }
 
@@ -80,6 +76,7 @@ class StoreSession(
                 ?: activeStores.firstOrNull()
                 ?: defaultStore
 
+            storage.save(selectedStore.id)
             StoreSession(selectedStoreID = selectedStore.id, storage = storage)
         }
     }
