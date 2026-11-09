@@ -19,6 +19,8 @@ android {
 }
 
 dependencies {
-    // Room, DataStore e kotlinx.serialization entram nas levas A1 a A3, quando forem usados.
+    // Os servicos sao suspend: o armazenamento real (Room, na A2) grava fora da thread principal.
+    implementation(libs.kotlinx.coroutines.android)
+    // Room, DataStore e kotlinx.serialization entram nas levas A2 e A3, quando forem usados.
     testImplementation(libs.junit)
 }
