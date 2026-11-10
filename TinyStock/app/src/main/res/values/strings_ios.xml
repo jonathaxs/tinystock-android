@@ -394,9 +394,8 @@
     <string name="notifications_order_unavailable">Order unavailable or store archived.</string>
     <string name="notifications_order_error">The order could not be opened. Try again from Calendar.</string>
     <string name="settings_section_system">System</string>
-    <string name="settings_section_preferences">Preferences</string>
     <string name="settings_section_about">About</string>
-    <string name="settings_section_profile">Profile</string>
+    <string name="settings_section_appearance">Appearance</string>
     <string name="settings_language">Language</string>
     <string name="settings_language_hint">Opens the app settings on this device.</string>
     <string name="settings_backup_title">Backups</string>
@@ -415,7 +414,6 @@
     <string name="color_pink">Pink</string>
     <string name="settings_about_title">About TinyStock</string>
     <string name="settings_about_description">TinyStock helps small sellers organize products, variations, inventory, orders, production and dispatch deadlines.</string>
-    <string name="settings_about_information">Information</string>
     <string name="settings_about_developer">Developer</string>
     <string name="settings_about_feedback">Send feedback</string>
     <string name="settings_about_website">Developer website</string>

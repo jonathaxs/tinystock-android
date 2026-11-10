@@ -110,6 +110,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         sheet = null
     }
 
+    fun setAccentColor(color: AppAccentColor) {
+        viewModelScope.launch { preferences.setAccentColor(color) }
+    }
+
     fun completeWelcome() {
         viewModelScope.launch { preferences.setDidCompleteWelcome(true) }
     }

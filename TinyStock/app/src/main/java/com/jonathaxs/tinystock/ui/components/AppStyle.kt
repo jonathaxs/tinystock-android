@@ -63,14 +63,18 @@ object AppStyle {
 
 // region Rotulo de secao
 
-/** Titulo pequeno acima de um card agrupado. */
+/** Titulo pequeno acima de um card agrupado. Nos Ajustes vem na cor de destaque. */
 @Composable
-fun AppSectionLabel(text: String, modifier: Modifier = Modifier) {
+fun AppSectionLabel(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+) {
     Text(
         text = text,
         fontSize = 15.sp,
         fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        color = color,
         modifier = modifier
             .padding(horizontal = 6.dp)
             .semantics { heading() },

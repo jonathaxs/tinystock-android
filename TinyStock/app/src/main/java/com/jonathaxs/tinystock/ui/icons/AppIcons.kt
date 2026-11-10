@@ -132,6 +132,81 @@ object AppIcons {
         }
     }
 
+    /** Equivale ao "globe" do iOS: circulo com meridiano e paralelos. */
+    val Globe: ImageVector by lazy {
+        strokeIcon("Globe") {
+            moveTo(3f, 12f)
+            arcToRelative(9f, 9f, 0f, true, true, 18f, 0f)
+            arcToRelative(9f, 9f, 0f, true, true, -18f, 0f)
+            close()
+            moveTo(12f, 3f)
+            arcToRelative(4f, 9f, 0f, false, true, 0f, 18f)
+            arcToRelative(4f, 9f, 0f, false, true, 0f, -18f)
+            close()
+            moveTo(3f, 12f)
+            horizontalLineTo(21f)
+            moveTo(4.6f, 7.5f)
+            horizontalLineTo(19.4f)
+            moveTo(4.6f, 16.5f)
+            horizontalLineTo(19.4f)
+        }
+    }
+
+    /** Equivale ao "arrow.up.forward.app" do iOS: abre fora do app. */
+    val OpenExternal: ImageVector by lazy {
+        strokeIcon("OpenExternal") {
+            moveTo(11f, 4.5f)
+            horizontalLineTo(6f)
+            arcToRelative(1.5f, 1.5f, 0f, false, false, -1.5f, 1.5f)
+            verticalLineTo(18f)
+            arcToRelative(1.5f, 1.5f, 0f, false, false, 1.5f, 1.5f)
+            horizontalLineTo(18f)
+            arcToRelative(1.5f, 1.5f, 0f, false, false, 1.5f, -1.5f)
+            verticalLineTo(13f)
+            moveTo(14f, 4.5f)
+            horizontalLineTo(19.5f)
+            verticalLineTo(10f)
+            moveTo(19.5f, 4.5f)
+            lineTo(11.5f, 12.5f)
+        }
+    }
+
+    /** Equivale ao "externaldrive" do iOS: disco com luz e fenda. */
+    val Drive: ImageVector by lazy {
+        strokeIcon("Drive") {
+            moveTo(5f, 7f)
+            horizontalLineTo(19f)
+            arcToRelative(2f, 2f, 0f, false, true, 2f, 2f)
+            verticalLineTo(15f)
+            arcToRelative(2f, 2f, 0f, false, true, -2f, 2f)
+            horizontalLineTo(5f)
+            arcToRelative(2f, 2f, 0f, false, true, -2f, -2f)
+            verticalLineTo(9f)
+            arcToRelative(2f, 2f, 0f, false, true, 2f, -2f)
+            close()
+            moveTo(16.5f, 12f)
+            lineTo(16.6f, 12f)
+            moveTo(6.5f, 12f)
+            horizontalLineTo(11f)
+        }
+    }
+
+    /** Equivale ao "paintpalette" do iOS: paleta com o encaixe do dedo e tres tintas. */
+    val Palette: ImageVector by lazy {
+        strokeIcon("Palette") {
+            moveTo(12f, 21f)
+            arcTo(9f, 9f, 0f, true, true, 21f, 12f)
+            quadTo(21f, 15f, 17.5f, 15f)
+            quadTo(14.5f, 15f, 15f, 17.5f)
+            quadTo(15.5f, 21f, 12f, 21f)
+            close()
+            for ((x, y) in listOf(7.8f to 10.5f, 10.5f to 7.2f, 14.8f to 7.6f, 8.2f to 15f)) {
+                moveTo(x, y)
+                lineTo(x + 0.1f, y)
+            }
+        }
+    }
+
     private fun strokeIcon(
         name: String,
         pathBuilder: androidx.compose.ui.graphics.vector.PathBuilder.() -> Unit,

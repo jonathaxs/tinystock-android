@@ -394,9 +394,8 @@
     <string name="notifications_order_unavailable">Pedido indisponível ou loja arquivada.</string>
     <string name="notifications_order_error">Não foi possível abrir o pedido. Tente novamente pelo Calendário.</string>
     <string name="settings_section_system">Sistema</string>
-    <string name="settings_section_preferences">Preferências</string>
     <string name="settings_section_about">Sobre</string>
-    <string name="settings_section_profile">Perfil</string>
+    <string name="settings_section_appearance">Aparência</string>
     <string name="settings_language">Idioma</string>
     <string name="settings_language_hint">Abre os ajustes do aplicativo neste dispositivo.</string>
     <string name="settings_backup_title">Backups</string>
@@ -415,7 +414,6 @@
     <string name="color_pink">Rosa</string>
     <string name="settings_about_title">Sobre o TinyStock</string>
     <string name="settings_about_description">O TinyStock ajuda pequenos vendedores a organizar produtos, variações, estoque, pedidos, produção e prazos de despacho.</string>
-    <string name="settings_about_information">Informações</string>
     <string name="settings_about_developer">Desenvolvedor</string>
     <string name="settings_about_feedback">Enviar feedback</string>
     <string name="settings_about_website">Site do desenvolvedor</string>

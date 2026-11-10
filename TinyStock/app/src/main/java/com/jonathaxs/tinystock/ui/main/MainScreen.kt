@@ -7,18 +7,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Warning
@@ -52,13 +46,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.jonathaxs.tinystock.R
 import com.jonathaxs.tinystock.ui.components.AppCircleButton
+import com.jonathaxs.tinystock.ui.components.ComingSoonBody
+import com.jonathaxs.tinystock.ui.components.ComingSoonPage
 import com.jonathaxs.tinystock.ui.home.HomeScreen
+import com.jonathaxs.tinystock.ui.settings.ColorSettingsScreen
+import com.jonathaxs.tinystock.ui.settings.SettingsPage
+import com.jonathaxs.tinystock.ui.settings.SettingsScreen
 import com.jonathaxs.tinystock.ui.theme.TinyStockTheme
 import com.jonathaxs.tinystock.ui.util.ApplyOrientationLock
 import com.jonathaxs.tinystock.ui.welcome.WelcomeScreen
 
 private const val ROUTE_HOME = "home"
 private const val ROUTE_SETTINGS = "settings"
+
+private fun settingsRoute(page: SettingsPage) = "$ROUTE_SETTINGS/${page.name}"
 
 /** Raiz do app: tema com a cor de destaque, boas-vindas na primeira abertura e a Inicio depois. */
 @Composable
@@ -92,6 +93,7 @@ private fun MainScreen(viewModel: MainViewModel) {
     val storeID by viewModel.selectedStoreID.collectAsStateWithLifecycle()
     val selectedStore by viewModel.selectedStore.collectAsStateWithLifecycle()
     val stores by viewModel.activeStores.collectAsStateWithLifecycle()
+    val accent by viewModel.accentColor.collectAsStateWithLifecycle()
     var comingSoon by rememberSaveable { mutableStateOf<String?>(null) }
     val storeName = selectedStore?.name ?: stringResource(R.string.store_default_name)
 
@@ -114,7 +116,21 @@ private fun MainScreen(viewModel: MainViewModel) {
             )
         }
         composable(ROUTE_SETTINGS) {
-            ComingSoonPage(title = stringResource(R.string.tab_settings), onBack = { navController.popBackStack() })
+            SettingsScreen(
+                selectedStore = selectedStore,
+                onOpen = { page -> navController.navigate(settingsRoute(page)) { launchSingleTop = true } },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        for (page in SettingsPage.entries) {
+            composable(settingsRoute(page)) {
+                val back = { navController.popBackStack(); Unit }
+                when (page) {
+                    SettingsPage.Colors -> ColorSettingsScreen(accent, viewModel::setAccentColor, back)
+                    // As outras paginas dos Ajustes chegam nas proximas etapas.
+                    else -> ComingSoonPage(title = stringResource(page.titleRes), onBack = back)
+                }
+            }
         }
     }
 
@@ -166,48 +182,6 @@ private fun ColumnScope.SheetHeader(title: String, subtitle: String, onClose: ()
             Text(title, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.semantics { heading() })
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-    }
-}
-
-/** Pagina provisoria das telas que ainda serao portadas (Ajustes). */
-@Composable
-private fun ComingSoonPage(title: String, onBack: () -> Unit) {
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .windowInsetsPadding(WindowInsets.safeDrawing),
-    ) {
-        Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            AppCircleButton(
-                icon = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.welcome_button_back),
-                onClick = onBack,
-                size = 44.dp,
-            )
-            Spacer(Modifier.size(12.dp))
-            Text(title, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.semantics { heading() })
-        }
-        ComingSoonBody(Modifier.weight(1f))
-    }
-}
-
-@Composable
-private fun ComingSoonBody(modifier: Modifier = Modifier) {
-    Column(
-        modifier
-            .fillMaxWidth()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
-    ) {
-        Icon(Icons.Filled.Build, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(40.dp))
-        Text(stringResource(R.string.coming_soon_title), fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        Text(
-            stringResource(R.string.coming_soon_message),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
     }
 }
 
