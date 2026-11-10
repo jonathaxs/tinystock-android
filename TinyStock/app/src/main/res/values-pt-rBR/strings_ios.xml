@@ -113,6 +113,7 @@
     <string name="reports_operation_openCalendar">Abre o Calendário com este filtro.</string>
     <string name="reports_count_orders_one">%d pedido</string>
     <string name="reports_count_orders_other">%d pedidos</string>
+    <string name="reports_count_units_one">%s unidade</string>
     <string name="reports_count_units">%s unidades</string>
     <string name="reports_daily_title">Por dia</string>
     <string name="reports_daily_profit">Lucro líquido: %s</string>

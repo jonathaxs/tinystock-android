@@ -49,6 +49,7 @@ import com.jonathaxs.tinystock.ui.components.AppCircleButton
 import com.jonathaxs.tinystock.ui.components.ComingSoonBody
 import com.jonathaxs.tinystock.ui.components.ComingSoonPage
 import com.jonathaxs.tinystock.ui.home.HomeScreen
+import com.jonathaxs.tinystock.ui.reports.ReportsScreen
 import com.jonathaxs.tinystock.ui.settings.ColorSettingsScreen
 import com.jonathaxs.tinystock.ui.settings.SettingsPage
 import com.jonathaxs.tinystock.ui.settings.SettingsScreen
@@ -146,7 +147,13 @@ private fun MainScreen(viewModel: MainViewModel) {
                 subtitle = storeName,
                 onClose = viewModel::dismissSheet,
             )
-            ComingSoonBody(Modifier.fillMaxSize())
+            val id = storeID
+            if (sheet == AppSheet.Reports && id != null) {
+                // "Ver no calendario": troca a sheet pela do Calendario, como no iOS.
+                ReportsScreen(storeID = id, onOpenCalendar = { viewModel.present(AppSheet.Calendar) })
+            } else {
+                ComingSoonBody(Modifier.fillMaxSize())
+            }
         }
     }
 

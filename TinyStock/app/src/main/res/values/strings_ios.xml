@@ -113,6 +113,7 @@
     <string name="reports_operation_openCalendar">Opens the Calendar with this filter.</string>
     <string name="reports_count_orders_one">%d order</string>
     <string name="reports_count_orders_other">%d orders</string>
+    <string name="reports_count_units_one">%s unit</string>
     <string name="reports_count_units">%s units</string>
     <string name="reports_daily_title">By day</string>
     <string name="reports_daily_profit">Net profit: %s</string>

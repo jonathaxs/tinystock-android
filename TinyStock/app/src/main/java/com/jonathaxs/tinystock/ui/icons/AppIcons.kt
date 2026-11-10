@@ -207,6 +207,92 @@ object AppIcons {
         }
     }
 
+    /** Equivale ao "hammer.fill" do iOS: cabo inclinado e a cabeca atravessada, preenchidos. */
+    val Hammer: ImageVector by lazy {
+        icon("Hammer") {
+            moveTo(19.8f, 12f)
+            lineTo(17f, 14.8f)
+            lineTo(9.2f, 7f)
+            lineTo(12f, 4.2f)
+            close()
+            moveTo(3.2f, 19.2f)
+            lineTo(12f, 10.4f)
+            lineTo(13.6f, 12f)
+            lineTo(4.8f, 20.8f)
+            close()
+        }
+    }
+
+    /** Equivale ao "chart.line.uptrend.xyaxis" do iOS. */
+    val TrendUp: ImageVector by lazy {
+        strokeIcon("TrendUp") {
+            moveTo(3.5f, 17.5f)
+            lineTo(9.5f, 11.5f)
+            lineTo(13.5f, 15f)
+            lineTo(20.5f, 7.5f)
+            moveTo(15f, 7.5f)
+            horizontalLineTo(20.5f)
+            verticalLineTo(13f)
+        }
+    }
+
+    /** Equivale ao "percent" do iOS. */
+    val Percent: ImageVector by lazy {
+        strokeIcon("Percent") {
+            moveTo(18.5f, 5.5f)
+            lineTo(5.5f, 18.5f)
+            circle(7.5f, 7.5f, 2.3f)
+            circle(16.5f, 16.5f, 2.3f)
+        }
+    }
+
+    /** Equivale ao "brazilianrealsign" do iOS: nota de dinheiro com a moeda no meio. */
+    val Money: ImageVector by lazy {
+        strokeIcon("Money") {
+            moveTo(5f, 6.5f)
+            horizontalLineTo(19f)
+            quadTo(21f, 6.5f, 21f, 8.5f)
+            verticalLineTo(15.5f)
+            quadTo(21f, 17.5f, 19f, 17.5f)
+            horizontalLineTo(5f)
+            quadTo(3f, 17.5f, 3f, 15.5f)
+            verticalLineTo(8.5f)
+            quadTo(3f, 6.5f, 5f, 6.5f)
+            close()
+            circle(12f, 12f, 2.6f)
+        }
+    }
+
+    /** Equivale ao "xmark.circle.fill" do iOS. */
+    val CancelCircle: ImageVector by lazy {
+        strokeIcon("CancelCircle") {
+            circle(12f, 12f, 8.8f)
+            moveTo(9f, 9f)
+            lineTo(15f, 15f)
+            moveTo(15f, 9f)
+            lineTo(9f, 15f)
+        }
+    }
+
+    /** Equivale ao "chevron.up.chevron.down" do iOS. */
+    val UpDown: ImageVector by lazy {
+        strokeIcon("UpDown") {
+            moveTo(8f, 9.5f)
+            lineTo(12f, 5.5f)
+            lineTo(16f, 9.5f)
+            moveTo(8f, 14.5f)
+            lineTo(12f, 18.5f)
+            lineTo(16f, 14.5f)
+        }
+    }
+
+    private fun androidx.compose.ui.graphics.vector.PathBuilder.circle(cx: Float, cy: Float, r: Float) {
+        moveTo(cx - r, cy)
+        arcToRelative(r, r, 0f, isMoreThanHalf = true, isPositiveArc = true, dx1 = 2 * r, dy1 = 0f)
+        arcToRelative(r, r, 0f, isMoreThanHalf = true, isPositiveArc = true, dx1 = -2 * r, dy1 = 0f)
+        close()
+    }
+
     private fun strokeIcon(
         name: String,
         pathBuilder: androidx.compose.ui.graphics.vector.PathBuilder.() -> Unit,
