@@ -102,6 +102,36 @@ object AppIcons {
         }
     }
 
+    /** Equivale ao "square.grid.2x2" do iOS: quatro quadrados com cantos arredondados. */
+    val Grid: ImageVector by lazy {
+        strokeIcon("Grid") {
+            for ((x, y) in listOf(4f to 4f, 13.5f to 4f, 4f to 13.5f, 13.5f to 13.5f)) {
+                moveTo(x + 1.5f, y)
+                horizontalLineToRelative(3.5f)
+                arcToRelative(1.5f, 1.5f, 0f, false, true, 1.5f, 1.5f)
+                verticalLineToRelative(3.5f)
+                arcToRelative(1.5f, 1.5f, 0f, false, true, -1.5f, 1.5f)
+                horizontalLineToRelative(-3.5f)
+                arcToRelative(1.5f, 1.5f, 0f, false, true, -1.5f, -1.5f)
+                verticalLineToRelative(-3.5f)
+                arcToRelative(1.5f, 1.5f, 0f, false, true, 1.5f, -1.5f)
+                close()
+            }
+        }
+    }
+
+    /** Equivale ao "list.bullet" do iOS: tres linhas com um ponto na frente. */
+    val ListBullet: ImageVector by lazy {
+        strokeIcon("ListBullet") {
+            for (y in listOf(6f, 12f, 18f)) {
+                moveTo(4.5f, y)
+                lineTo(4.6f, y)
+                moveTo(9f, y)
+                horizontalLineTo(20f)
+            }
+        }
+    }
+
     private fun strokeIcon(
         name: String,
         pathBuilder: androidx.compose.ui.graphics.vector.PathBuilder.() -> Unit,

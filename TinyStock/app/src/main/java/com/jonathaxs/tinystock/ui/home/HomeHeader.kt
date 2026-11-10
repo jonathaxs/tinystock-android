@@ -44,7 +44,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -314,13 +316,31 @@ private fun RowScope.InfoTile(color: Color, title: String, value: Int) {
 
 // region Botoes
 
-/** Linha de botoes redondos: Relatorios, Calendario e Ajustes. */
+/** Linha de botoes redondos: lista ou grade, Relatorios, Calendario e Ajustes. */
 @Composable
-fun HomePageButtons(onReports: () -> Unit, onCalendar: () -> Unit, onSettings: () -> Unit) {
+fun HomePageButtons(
+    viewMode: CatalogViewMode,
+    onToggleViewMode: () -> Unit,
+    onReports: () -> Unit,
+    onCalendar: () -> Unit,
+    onSettings: () -> Unit,
+) {
+    val haptics = LocalHapticFeedback.current
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
     ) {
+        // O icone mostra para onde vai: em lista, o de grade.
+        AppCircleButton(
+            icon = if (viewMode == CatalogViewMode.List) AppIcons.Grid else AppIcons.ListBullet,
+            contentDescription = stringResource(
+                if (viewMode == CatalogViewMode.List) R.string.products_viewMode_showGrid else R.string.products_viewMode_showList,
+            ),
+            onClick = {
+                haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                onToggleViewMode()
+            },
+        )
         AppCircleButton(AppIcons.BarChart, stringResource(R.string.tab_reports), onReports)
         AppCircleButton(Icons.Filled.DateRange, stringResource(R.string.tab_sales), onCalendar)
         AppCircleButton(Icons.Filled.Settings, stringResource(R.string.tab_settings), onSettings)

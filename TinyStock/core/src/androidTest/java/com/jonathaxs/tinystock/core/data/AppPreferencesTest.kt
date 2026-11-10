@@ -80,4 +80,18 @@ class AppPreferencesTest {
         prefs.setDidCompleteWelcome(true)
         assertTrue(prefs.didCompleteWelcome.first())
     }
+
+    @Test
+    fun modosDoCatalogoComecamNullEGravamComAsChavesDoIos() = runBlocking {
+        assertNull(prefs.catalogMode.first())
+        assertNull(prefs.catalogViewMode.first())
+
+        prefs.setCatalogMode("variants")
+        prefs.setCatalogViewMode("grid")
+        assertEquals("variants", prefs.catalogMode.first())
+        assertEquals("grid", prefs.catalogViewMode.first())
+        val raw = dataStore.data.first()
+        assertEquals("grid", raw[stringPreferencesKey("products.catalogViewMode")])
+        assertEquals("variants", raw[stringPreferencesKey("products.catalogMode")])
+    }
 }

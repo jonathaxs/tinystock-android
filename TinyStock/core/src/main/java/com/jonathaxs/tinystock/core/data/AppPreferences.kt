@@ -21,7 +21,7 @@ private val Context.appPreferencesStore by preferencesDataStore(name = "app_pref
  * Preferencias do app gravadas em DataStore (equivale ao `UserDefaults` / `@AppStorage` do iOS).
  *
  * Usa os mesmos nomes de chave do iOS: `app.selectedStoreID`, `app.accentColor` e
- * `app.didCompleteWelcome`.
+ * `app.didCompleteWelcome`, `products.catalogMode` e `products.catalogViewMode`.
  */
 class AppPreferences(
     private val dataStore: DataStore<Preferences>,
@@ -62,14 +62,32 @@ class AppPreferences(
         }
     }
 
+    /** Modo do catalogo na Inicio (`products` ou `variants`, valores do iOS). Null = nunca escolhido. */
+    val catalogMode: Flow<String?> = dataStore.data.map { prefs -> prefs[CATALOG_MODE_PREF_KEY] }
+
+    suspend fun setCatalogMode(rawValue: String) {
+        dataStore.edit { prefs -> prefs[CATALOG_MODE_PREF_KEY] = rawValue }
+    }
+
+    /** Catalogo em lista ou grade (`list` ou `grid`, valores do iOS). Null = nunca escolhido. */
+    val catalogViewMode: Flow<String?> = dataStore.data.map { prefs -> prefs[CATALOG_VIEW_MODE_PREF_KEY] }
+
+    suspend fun setCatalogViewMode(rawValue: String) {
+        dataStore.edit { prefs -> prefs[CATALOG_VIEW_MODE_PREF_KEY] = rawValue }
+    }
+
     companion object {
         const val SELECTED_STORE_KEY = StoreSession.SELECTED_STORE_KEY
         const val ACCENT_COLOR_KEY = AppAccentColor.STORAGE_KEY
         const val DID_COMPLETE_WELCOME_KEY = "app.didCompleteWelcome"
+        const val CATALOG_MODE_KEY = "products.catalogMode"
+        const val CATALOG_VIEW_MODE_KEY = "products.catalogViewMode"
 
         private val SELECTED_STORE_PREF_KEY = stringPreferencesKey(SELECTED_STORE_KEY)
         private val ACCENT_COLOR_PREF_KEY = stringPreferencesKey(ACCENT_COLOR_KEY)
         private val DID_COMPLETE_WELCOME_PREF_KEY = booleanPreferencesKey(DID_COMPLETE_WELCOME_KEY)
+        private val CATALOG_MODE_PREF_KEY = stringPreferencesKey(CATALOG_MODE_KEY)
+        private val CATALOG_VIEW_MODE_PREF_KEY = stringPreferencesKey(CATALOG_VIEW_MODE_KEY)
 
         fun from(context: Context): AppPreferences =
             AppPreferences(context.applicationContext.appPreferencesStore)

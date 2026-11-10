@@ -67,15 +67,9 @@ import com.jonathaxs.tinystock.ui.icons.AppIcons
 import java.text.NumberFormat
 import java.util.UUID
 
-/** Forma de exibir o catalogo. */
-private enum class CatalogMode(val titleRes: Int) {
-    Products(R.string.products_mode_products),
-    Variants(R.string.products_mode_variants),
-}
-
 /**
  * Tela Inicio: loja atual, caixa com o resumo, botoes redondos, Adicionar e o catalogo. Porte do topo do
- * `ProductsView` do iOS (C3 e C3.2). O catalogo aqui e simples; o C4 troca por cards.
+ * `ProductsView` do iOS (C3, C3.2 e C4). O catalogo pode ser lista ou grade.
  */
 @Composable
 fun HomeScreen(
@@ -93,7 +87,8 @@ fun HomeScreen(
     LaunchedEffect(storeID) { viewModel.setStore(storeID) }
     val data by viewModel.data.collectAsStateWithLifecycle()
     var search by rememberSaveable(storeID) { mutableStateOf("") }
-    var mode by rememberSaveable { mutableStateOf(CatalogMode.Products) }
+    val mode by viewModel.catalogMode.collectAsStateWithLifecycle()
+    val viewMode by viewModel.viewMode.collectAsStateWithLifecycle()
 
     val filtered = remember(data, search) { data.products.filter { it.matches(search, data.variants) } }
     val titles = mapOf(
@@ -102,6 +97,8 @@ fun HomeScreen(
         HomeAddAction.Variant to stringResource(R.string.stock_entry_newVariant),
     )
     val editStoreTitle = stringResource(R.string.store_form_title_edit)
+    val editVariantTitle = stringResource(R.string.product_variant_edit_title)
+    val actionTitles = ProductAction.entries.associateWith { stringResource(it.titleRes) }
 
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         LazyColumn(
@@ -124,7 +121,7 @@ fun HomeScreen(
                 )
             }
             item("hero") { HomeHero(data.products, data.variants, data.orders) }
-            item("pages") { HomePageButtons(onReports, onCalendar, onSettings) }
+            item("pages") { HomePageButtons(viewMode, viewModel::toggleViewMode, onReports, onCalendar, onSettings) }
             item("add") {
                 HomeAddButton(hasProducts = data.products.isNotEmpty()) { action -> onComingSoon(titles.getValue(action)) }
             }
@@ -135,9 +132,23 @@ fun HomeScreen(
                 return@LazyColumn
             }
             item("search") { SearchField(search, onChange = { search = it }) }
-            item("mode") { CatalogHeader(mode, onModeChange = { mode = it }) }
+            item("mode") { CatalogHeader(mode, onModeChange = viewModel::setCatalogMode) }
             if (filtered.isEmpty()) {
                 item("noResults") { NoResults(search) }
+            } else if (viewMode == CatalogViewMode.Grid && mode == CatalogMode.Products) {
+                item("productsGrid") {
+                    ProductCatalogGrid(filtered, data.variants) { action, _ -> onComingSoon(actionTitles.getValue(action)) }
+                }
+            } else if (viewMode == CatalogViewMode.Grid) {
+                items(filtered, key = { it.id }) { product ->
+                    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        AppSectionLabel(product.name)
+                        VariantCatalogGrid(data.variants.filter { it.belongsTo(product) }.sortedBy { it.name }) {
+                            onComingSoon(editVariantTitle)
+                        }
+                        Spacer(Modifier.size(4.dp))
+                    }
+                }
             } else if (mode == CatalogMode.Products) {
                 item("products") {
                     AppGroupedCard(

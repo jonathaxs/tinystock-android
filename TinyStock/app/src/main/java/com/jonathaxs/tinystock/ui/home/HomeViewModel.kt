@@ -3,6 +3,8 @@ package com.jonathaxs.tinystock.ui.home
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import com.jonathaxs.tinystock.container
 import com.jonathaxs.tinystock.core.model.Product
 import com.jonathaxs.tinystock.core.model.ProductVariant
@@ -29,6 +31,7 @@ data class HomeData(
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val store = application.container.store
+    private val preferences = application.container.preferences
     private val storeID = MutableStateFlow<UUID?>(null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -43,6 +46,24 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeData())
+
+    /** Produtos ou variacoes, lembrado entre aberturas como no iOS. */
+    val catalogMode: StateFlow<CatalogMode> = preferences.catalogMode
+        .map { CatalogMode.fromRawValue(it) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, CatalogMode.Products)
+
+    /** Lista ou grade, lembrado entre aberturas como no iOS. */
+    val viewMode: StateFlow<CatalogViewMode> = preferences.catalogViewMode
+        .map { CatalogViewMode.fromRawValue(it) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, CatalogViewMode.List)
+
+    fun setCatalogMode(mode: CatalogMode) {
+        viewModelScope.launch { preferences.setCatalogMode(mode.rawValue) }
+    }
+
+    fun toggleViewMode() {
+        viewModelScope.launch { preferences.setCatalogViewMode(viewMode.value.next.rawValue) }
+    }
 
     fun setStore(id: UUID) {
         storeID.value = id

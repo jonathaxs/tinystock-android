@@ -462,6 +462,9 @@
     <string name="products_mode_variants">Variações</string>
     <string name="products_variants_noVariation">Sem variação</string>
     <string name="products_actions">Ações do produto</string>
+    <string name="products_viewMode_showGrid">Ver em grade</string>
+    <string name="products_viewMode_showList">Ver em lista</string>
+    <string name="products_grid_hint">Toque para ver as ações.</string>
     <string name="store_switcher_current">Loja atual</string>
     <string name="store_switcher_others">Trocar de loja</string>
 

@@ -462,6 +462,9 @@
     <string name="products_mode_variants">Variations</string>
     <string name="products_variants_noVariation">No variation</string>
     <string name="products_actions">Product actions</string>
+    <string name="products_viewMode_showGrid">Show as grid</string>
+    <string name="products_viewMode_showList">Show as list</string>
+    <string name="products_grid_hint">Tap to see actions.</string>
     <string name="store_switcher_current">Current store</string>
     <string name="store_switcher_others">Switch store</string>
 
