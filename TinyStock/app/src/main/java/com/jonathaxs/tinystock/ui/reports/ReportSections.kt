@@ -52,7 +52,10 @@ import com.jonathaxs.tinystock.core.report.SalesOrderReportSummary
 import com.jonathaxs.tinystock.core.report.SalesOrderReportTotals
 import com.jonathaxs.tinystock.ui.components.AppGroupedCard
 import com.jonathaxs.tinystock.ui.components.AppSectionLabel
+import com.jonathaxs.tinystock.core.model.SalesOrderStatus
+import com.jonathaxs.tinystock.ui.calendar.CalendarOrderFilter
 import com.jonathaxs.tinystock.ui.components.CircleIcon
+import com.jonathaxs.tinystock.ui.components.isLargeFont
 import com.jonathaxs.tinystock.ui.components.appCard
 import com.jonathaxs.tinystock.ui.icons.AppIcons
 import com.jonathaxs.tinystock.ui.theme.color
@@ -124,15 +127,15 @@ private fun <T> GroupedRows(items: List<T>, dividerInset: Dp = 16.dp, row: @Comp
 }
 
 @Composable
-internal fun OperationSection(operations: SalesOrderOperationalSummary, onOpenCalendar: () -> Unit) {
+internal fun OperationSection(operations: SalesOrderOperationalSummary, onOpenCalendar: (CalendarOrderFilter) -> Unit) {
     val dark = isSystemInDarkTheme()
     ReportSection(stringResource(R.string.reports_operation_title)) {
         AppGroupedCard(
             rows = listOf(
-                { OperationRow(stringResource(R.string.reports_operation_toProduce), operations.toProduce, AppIcons.Hammer, ReportColors.orange(dark), onOpenCalendar) },
-                { OperationRow(stringResource(R.string.reports_operation_readyToShip), operations.readyToShip, AppIcons.Box, ReportColors.blue(dark), onOpenCalendar) },
-                { OperationRow(stringResource(R.string.reports_operation_overdue), operations.overdue, Icons.Filled.Warning, ReportColors.red(dark), onOpenCalendar) },
-                { OperationRow(stringResource(R.string.reports_operation_shipped), operations.shipped, Icons.AutoMirrored.Filled.Send, ReportColors.green(dark), onOpenCalendar) },
+                { OperationRow(stringResource(R.string.reports_operation_toProduce), operations.toProduce, AppIcons.Hammer, ReportColors.orange(dark)) { onOpenCalendar(CalendarOrderFilter.Production) } },
+                { OperationRow(stringResource(R.string.reports_operation_readyToShip), operations.readyToShip, AppIcons.Box, ReportColors.blue(dark)) { onOpenCalendar(CalendarOrderFilter.Status(SalesOrderStatus.ReadyToShip)) } },
+                { OperationRow(stringResource(R.string.reports_operation_overdue), operations.overdue, Icons.Filled.Warning, ReportColors.red(dark)) { onOpenCalendar(CalendarOrderFilter.Overdue) } },
+                { OperationRow(stringResource(R.string.reports_operation_shipped), operations.shipped, Icons.AutoMirrored.Filled.Send, ReportColors.green(dark)) { onOpenCalendar(CalendarOrderFilter.Status(SalesOrderStatus.Shipped)) } },
             ),
             dividerInset = IconRowInset,
         )

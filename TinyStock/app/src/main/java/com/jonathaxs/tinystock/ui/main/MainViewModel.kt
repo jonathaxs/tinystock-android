@@ -12,6 +12,7 @@ import com.jonathaxs.tinystock.core.model.AppAccentColor
 import com.jonathaxs.tinystock.core.model.StoreProfile
 import com.jonathaxs.tinystock.core.service.StoreProfileService
 import com.jonathaxs.tinystock.core.service.StoreSession
+import com.jonathaxs.tinystock.ui.calendar.CalendarOrderFilter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -102,8 +103,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /** Filtro pedido pelos Relatorios ao abrir o Calendario; o Calendario consome e limpa. */
+    var calendarFilterRequest by mutableStateOf<CalendarOrderFilter?>(null)
+        private set
+
     fun present(newSheet: AppSheet) {
         sheet = newSheet
+    }
+
+    fun openCalendar(filter: CalendarOrderFilter) {
+        calendarFilterRequest = filter
+        sheet = AppSheet.Calendar
+    }
+
+    fun consumeCalendarFilterRequest() {
+        calendarFilterRequest = null
     }
 
     fun dismissSheet() {

@@ -46,8 +46,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.jonathaxs.tinystock.R
 import com.jonathaxs.tinystock.ui.components.AppCircleButton
-import com.jonathaxs.tinystock.ui.components.ComingSoonBody
 import com.jonathaxs.tinystock.ui.components.ComingSoonPage
+import com.jonathaxs.tinystock.ui.calendar.CalendarScreen
 import com.jonathaxs.tinystock.ui.home.HomeScreen
 import com.jonathaxs.tinystock.ui.reports.ReportsScreen
 import com.jonathaxs.tinystock.ui.settings.ColorSettingsScreen
@@ -148,11 +148,15 @@ private fun MainScreen(viewModel: MainViewModel) {
                 onClose = viewModel::dismissSheet,
             )
             val id = storeID
-            if (sheet == AppSheet.Reports && id != null) {
-                // "Ver no calendario": troca a sheet pela do Calendario, como no iOS.
-                ReportsScreen(storeID = id, onOpenCalendar = { viewModel.present(AppSheet.Calendar) })
-            } else {
-                ComingSoonBody(Modifier.fillMaxSize())
+            when {
+                id == null -> Unit
+                // Toque numa fila: troca a sheet pela do Calendario ja filtrado, como no iOS.
+                sheet == AppSheet.Reports -> ReportsScreen(storeID = id, onOpenCalendar = viewModel::openCalendar)
+                else -> CalendarScreen(
+                    storeID = id,
+                    filterRequest = viewModel.calendarFilterRequest,
+                    onFilterRequestHandled = viewModel::consumeCalendarFilterRequest,
+                )
             }
         }
     }

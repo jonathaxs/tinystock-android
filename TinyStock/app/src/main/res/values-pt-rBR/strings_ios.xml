@@ -348,6 +348,7 @@
     <string name="order_calendar_nextMonth">Próximo mês</string>
     <string name="order_calendar_dayCount">Pedidos: %s</string>
     <string name="order_calendar_filter">Filtrar pedidos</string>
+    <string name="order_calendar_filter_label">Mostrar</string>
     <string name="order_calendar_allStatuses">Todos os pedidos</string>
     <string name="order_calendar_overdue">Atrasados</string>
     <string name="order_calendar_overdueBadge">Atrasado</string>

@@ -348,6 +348,7 @@
     <string name="order_calendar_nextMonth">Next month</string>
     <string name="order_calendar_dayCount">Orders: %s</string>
     <string name="order_calendar_filter">Filter orders</string>
+    <string name="order_calendar_filter_label">Show</string>
     <string name="order_calendar_allStatuses">All orders</string>
     <string name="order_calendar_overdue">Overdue</string>
     <string name="order_calendar_overdueBadge">Overdue</string>

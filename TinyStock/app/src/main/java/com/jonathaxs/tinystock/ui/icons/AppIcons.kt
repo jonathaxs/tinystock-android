@@ -286,6 +286,46 @@ object AppIcons {
         }
     }
 
+    /** Equivale ao "clock.fill" do iOS. */
+    val Clock: ImageVector by lazy {
+        strokeIcon("Clock") {
+            circle(12f, 12f, 8.8f)
+            moveTo(12f, 7f)
+            verticalLineTo(12f)
+            lineTo(15.5f, 14f)
+        }
+    }
+
+    /** Equivale ao "sparkles" do iOS: estrela de quatro pontas com uma menor ao lado. */
+    val Sparkles: ImageVector by lazy {
+        icon("Sparkles") {
+            moveTo(10f, 3f)
+            quadTo(11f, 9f, 17f, 10f)
+            quadTo(11f, 11f, 10f, 17f)
+            quadTo(9f, 11f, 3f, 10f)
+            quadTo(9f, 9f, 10f, 3f)
+            close()
+            moveTo(18f, 14f)
+            quadTo(18.5f, 17.5f, 22f, 18f)
+            quadTo(18.5f, 18.5f, 18f, 22f)
+            quadTo(17.5f, 18.5f, 14f, 18f)
+            quadTo(17.5f, 17.5f, 18f, 14f)
+            close()
+        }
+    }
+
+    /** Equivale ao "line.3.horizontal.decrease" do iOS. */
+    val Filter: ImageVector by lazy {
+        strokeIcon("Filter") {
+            moveTo(4f, 7f)
+            horizontalLineTo(20f)
+            moveTo(7f, 12f)
+            horizontalLineTo(17f)
+            moveTo(10f, 17f)
+            horizontalLineTo(14f)
+        }
+    }
+
     private fun androidx.compose.ui.graphics.vector.PathBuilder.circle(cx: Float, cy: Float, r: Float) {
         moveTo(cx - r, cy)
         arcToRelative(r, r, 0f, isMoreThanHalf = true, isPositiveArc = true, dx1 = 2 * r, dy1 = 0f)

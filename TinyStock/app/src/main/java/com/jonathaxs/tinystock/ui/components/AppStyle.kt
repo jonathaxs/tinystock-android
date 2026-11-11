@@ -5,6 +5,22 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -132,6 +148,74 @@ fun AppGroupedCard(
 
 // endregion
 
+// region Menu
+
+/** Fonte grande (equivale ao `isAccessibilitySize` do iOS): troca linhas lado a lado por pilhas. */
+@Composable
+fun isLargeFont(): Boolean = LocalDensity.current.fontScale >= 1.5f
+
+/**
+ * Linha arredondada que abre um menu: icone, rotulo, valor atual e as setas. Porte do `AppMenuRow` do
+ * iOS (periodo dos Relatorios, filtro do Calendario). O conteudo recebe `close` para fechar o menu.
+ */
+@Composable
+fun AppMenuRow(
+    icon: ImageVector,
+    title: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    menuContent: @Composable ColumnScope.(close: () -> Unit) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val shape = RoundedCornerShape(24.dp)
+    Box(modifier) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .clip(shape)
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .clickable(role = Role.Button) { expanded = true }
+                .padding(horizontal = 18.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            if (isLargeFont()) {
+                Column(Modifier.weight(1f).padding(vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(title, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(value)
+                }
+            } else {
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                Text(title, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, softWrap = false)
+                Text(value, textAlign = TextAlign.End, maxLines = 1, modifier = Modifier.weight(1f).padding(start = 2.dp))
+                Icon(AppIcons.UpDown, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+            }
+        }
+        Box(Modifier.align(Alignment.BottomEnd)) {
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, shape = shape) {
+                menuContent { expanded = false }
+            }
+        }
+    }
+}
+
+/** Opcao de menu com a marca de selecionado a esquerda, como o `Picker` inline do iOS. */
+@Composable
+fun AppMenuItem(text: String, checked: Boolean, onClick: () -> Unit, icon: ImageVector? = null) {
+    DropdownMenuItem(
+        text = { Text(text) },
+        onClick = onClick,
+        leadingIcon = {
+            if (checked) Icon(Icons.Filled.Check, contentDescription = null) else Spacer(Modifier.width(24.dp))
+        },
+        trailingIcon = icon?.let { { Icon(it, contentDescription = null, modifier = Modifier.size(20.dp)) } },
+        modifier = Modifier.semantics { selected = checked },
+    )
+}
+
+// endregion
+
 // region Botoes
 
 /** Botao principal em pilula com a cor de destaque. `large` segue o controlSize(.large) do iOS. */
@@ -188,13 +272,15 @@ fun AppCircleButton(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.primary,
     size: Dp = 52.dp,
+    /** Dentro de um card, usar um tom acima do card para o circulo aparecer. */
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
 ) {
     FilledTonalIconButton(
         onClick = onClick,
         modifier = modifier.size(size),
         shape = CircleShape,
         colors = IconButtonDefaults.filledTonalIconButtonColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = containerColor,
             contentColor = color,
         ),
     ) {

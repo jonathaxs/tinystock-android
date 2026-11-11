@@ -94,4 +94,13 @@ class AppPreferencesTest {
         assertEquals("grid", raw[stringPreferencesKey("products.catalogViewMode")])
         assertEquals("variants", raw[stringPreferencesKey("products.catalogMode")])
     }
+
+    @Test
+    fun modoDoCalendarioComecaNullEGravaComAChaveDoIos() = runBlocking {
+        assertNull(prefs.ordersDisplayMode.first())
+
+        prefs.setOrdersDisplayMode("list")
+        assertEquals("list", prefs.ordersDisplayMode.first())
+        assertEquals("list", dataStore.data.first()[stringPreferencesKey("orders.displayMode")])
+    }
 }

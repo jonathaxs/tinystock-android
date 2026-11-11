@@ -76,18 +76,27 @@ class AppPreferences(
         dataStore.edit { prefs -> prefs[CATALOG_VIEW_MODE_PREF_KEY] = rawValue }
     }
 
+    /** Calendario no modo dia ou lista (`day` ou `list`, valores do iOS). Null = nunca escolhido. */
+    val ordersDisplayMode: Flow<String?> = dataStore.data.map { prefs -> prefs[ORDERS_DISPLAY_MODE_PREF_KEY] }
+
+    suspend fun setOrdersDisplayMode(rawValue: String) {
+        dataStore.edit { prefs -> prefs[ORDERS_DISPLAY_MODE_PREF_KEY] = rawValue }
+    }
+
     companion object {
         const val SELECTED_STORE_KEY = StoreSession.SELECTED_STORE_KEY
         const val ACCENT_COLOR_KEY = AppAccentColor.STORAGE_KEY
         const val DID_COMPLETE_WELCOME_KEY = "app.didCompleteWelcome"
         const val CATALOG_MODE_KEY = "products.catalogMode"
         const val CATALOG_VIEW_MODE_KEY = "products.catalogViewMode"
+        const val ORDERS_DISPLAY_MODE_KEY = "orders.displayMode"
 
         private val SELECTED_STORE_PREF_KEY = stringPreferencesKey(SELECTED_STORE_KEY)
         private val ACCENT_COLOR_PREF_KEY = stringPreferencesKey(ACCENT_COLOR_KEY)
         private val DID_COMPLETE_WELCOME_PREF_KEY = booleanPreferencesKey(DID_COMPLETE_WELCOME_KEY)
         private val CATALOG_MODE_PREF_KEY = stringPreferencesKey(CATALOG_MODE_KEY)
         private val CATALOG_VIEW_MODE_PREF_KEY = stringPreferencesKey(CATALOG_VIEW_MODE_KEY)
+        private val ORDERS_DISPLAY_MODE_PREF_KEY = stringPreferencesKey(ORDERS_DISPLAY_MODE_KEY)
 
         fun from(context: Context): AppPreferences =
             AppPreferences(context.applicationContext.appPreferencesStore)
