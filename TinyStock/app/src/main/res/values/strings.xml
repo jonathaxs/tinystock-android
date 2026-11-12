@@ -18,4 +18,8 @@
     <string name="a11y_decrease">Decrease</string>
     <string name="a11y_increase">Increase</string>
     <string name="a11y_delete">Delete</string>
+
+    <!-- Exportar prazos do pedido: no Android vai para o app de agenda do aparelho. -->
+    <string name="calendar_export_section">Phone calendar</string>
+    <string name="calendar_export_unavailable">No calendar app found to add this event.</string>
 </resources>

@@ -122,6 +122,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun dismissSheet() {
         sheet = null
+        editingOrderID = null
+    }
+
+    /** Pedido em edicao, aberto pelo lapis do detalhe; a tela cobre o Calendario dentro da sheet. */
+    var editingOrderID by mutableStateOf<UUID?>(null)
+        private set
+
+    fun editOrder(id: UUID?) {
+        editingOrderID = id
     }
 
     fun setAccentColor(color: AppAccentColor) {

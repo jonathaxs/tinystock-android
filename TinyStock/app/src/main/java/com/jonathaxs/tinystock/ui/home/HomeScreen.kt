@@ -89,8 +89,8 @@ fun HomeScreen(
     /** Acao escolhida no balao de um produto (lista ou grade). */
     onProductAction: (ProductAction, Product) -> Unit,
     onEditVariant: (ProductVariant) -> Unit,
-    /** Telas ainda nao portadas (edicao da loja): abre o aviso "em construcao". */
-    onComingSoon: (title: String) -> Unit,
+    /** Editar a loja atual, pelo menu do nome da loja. */
+    onEditStore: () -> Unit,
     viewModel: HomeViewModel = viewModel(),
 ) {
     LaunchedEffect(storeID) { viewModel.setStore(storeID) }
@@ -100,7 +100,6 @@ fun HomeScreen(
     val viewMode by viewModel.viewMode.collectAsStateWithLifecycle()
 
     val filtered = remember(data, search) { data.products.filter { it.matches(search, data.variants) } }
-    val editStoreTitle = stringResource(R.string.store_form_title_edit)
 
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         LazyColumn(
@@ -119,7 +118,7 @@ fun HomeScreen(
                     selected = selectedStore,
                     stores = stores,
                     onSelect = onSelectStore,
-                    onEditCurrent = { onComingSoon(editStoreTitle) },
+                    onEditCurrent = { onEditStore() },
                 )
             }
             item("hero") { HomeHero(data.products, data.variants, data.orders) }

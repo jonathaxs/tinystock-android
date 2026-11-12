@@ -436,7 +436,6 @@
     <string name="settings_calendar_showExport_footer">Quando ativado, pedidos elegíveis oferecem eventos de produção e despacho para exportação.</string>
     <string name="settings_calendar_privacy">Privacidade</string>
     <string name="settings_calendar_privacy_message">Cada evento é revisado no editor do Calendário da Apple antes de ser salvo. O TinyStock não lê seus calendários.</string>
-    <string name="calendar_export_section">Calendário do iPhone</string>
     <string name="calendar_export_production_action">Adicionar produção</string>
     <string name="calendar_export_shipping_action">Adicionar despacho</string>
     <string name="calendar_export_production_title">Produzir: %s</string>

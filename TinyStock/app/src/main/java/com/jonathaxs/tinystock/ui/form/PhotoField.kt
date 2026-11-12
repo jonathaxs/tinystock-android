@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -139,7 +140,14 @@ object PhotoProcessor {
  * Porte do `ProductPhotoEditor`.
  */
 @Composable
-fun PhotoField(draft: PhotoDraft, onError: (Int) -> Unit, modifier: Modifier = Modifier) {
+fun PhotoField(
+    draft: PhotoDraft,
+    onError: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    placeholder: ImageVector = AppIcons.Box,
+    chooseLabel: String = stringResource(R.string.product_form_photo_choose),
+    removeLabel: String = stringResource(R.string.product_form_photo_remove),
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var expanded by remember { mutableStateOf(false) }
@@ -173,7 +181,7 @@ fun PhotoField(draft: PhotoDraft, onError: (Int) -> Unit, modifier: Modifier = M
                     role = Role.Button
                 },
         ) {
-            PhotoPreview(draft)
+            PhotoPreview(draft, placeholder)
             Box(
                 Modifier
                     .align(Alignment.BottomEnd)
@@ -191,7 +199,7 @@ fun PhotoField(draft: PhotoDraft, onError: (Int) -> Unit, modifier: Modifier = M
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.product_form_photo_choose)) },
+                    text = { Text(chooseLabel) },
                     leadingIcon = { Icon(AppIcons.Photo, contentDescription = null) },
                     onClick = {
                         expanded = false
@@ -210,7 +218,7 @@ fun PhotoField(draft: PhotoDraft, onError: (Int) -> Unit, modifier: Modifier = M
                 }
                 if (draft.hasPhoto) {
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.product_form_photo_remove), color = MaterialTheme.colorScheme.error) },
+                        text = { Text(removeLabel, color = MaterialTheme.colorScheme.error) },
                         leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
                         onClick = {
                             expanded = false
@@ -224,7 +232,7 @@ fun PhotoField(draft: PhotoDraft, onError: (Int) -> Unit, modifier: Modifier = M
 }
 
 @Composable
-private fun PhotoPreview(draft: PhotoDraft) {
+private fun PhotoPreview(draft: PhotoDraft, placeholder: ImageVector) {
     val side = 104.dp
     val bytes = draft.newBytes
     if (bytes != null) {
@@ -239,7 +247,7 @@ private fun PhotoPreview(draft: PhotoDraft) {
             return
         }
     }
-    StoredImage(if (draft.removed) null else draft.originalFileName, AppIcons.Box, side)
+    StoredImage(if (draft.removed) null else draft.originalFileName, placeholder, side)
 }
 
 /** Arquivo temporario onde a camera grava a foto, entregue por FileProvider. */

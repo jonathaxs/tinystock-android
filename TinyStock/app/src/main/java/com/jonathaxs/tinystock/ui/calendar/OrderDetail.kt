@@ -1,6 +1,17 @@
 package com.jonathaxs.tinystock.ui.calendar
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import android.content.Context
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import com.jonathaxs.tinystock.core.model.OrderCalendarEventKind
+import com.jonathaxs.tinystock.core.service.OrderCalendarExportPlanner
+import com.jonathaxs.tinystock.ui.components.CircleIcon
+import com.jonathaxs.tinystock.ui.icons.AppIcons
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,12 +64,16 @@ import java.time.ZoneId
 internal fun OrderDetail(
     order: SalesOrder,
     zone: ZoneId,
+    storeName: String,
     onBack: () -> Unit,
+    onEdit: () -> Unit,
     onAdvance: (OrderQuickAction) -> Unit,
     onCancel: () -> Unit,
 ) {
     val dark = isSystemInDarkTheme()
     val action = OrderPresentation.quickAction(order, dark)
+    val context = LocalContext.current
+    val drafts = OrderCalendarExportPlanner.drafts(order, storeName, zone)
     Column(Modifier.fillMaxSize()) {
         Row(
             Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
@@ -75,8 +90,17 @@ internal fun OrderDetail(
                 stringResource(R.string.order_detail_title),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.semantics { heading() },
+                modifier = Modifier.weight(1f).semantics { heading() },
             )
+            // Despachado, concluido ou cancelado nao edita mais.
+            if (OrderPresentation.canEdit(order)) {
+                AppCircleButton(
+                    icon = AppIcons.Pencil,
+                    contentDescription = stringResource(R.string.common_edit),
+                    onClick = onEdit,
+                    size = 44.dp,
+                )
+            }
         }
         LazyColumn(
             contentPadding = PaddingValues(start = AppStyle.HorizontalPadding, end = AppStyle.HorizontalPadding, top = 8.dp, bottom = 24.dp),
@@ -84,12 +108,25 @@ internal fun OrderDetail(
         ) {
             item("status") {
                 val unknown = stringResource(R.string.order_queue_unknown)
-                DetailCard(
-                    null,
-                    listOf(
-                        stringResource(R.string.order_detail_status) to (order.status?.let { stringResource(it.nameRes) } ?: unknown),
-                        stringResource(R.string.order_form_fulfillment) to (order.fulfillment?.let { stringResource(it.nameRes) } ?: unknown),
+                val symbol = statusSymbol(order.status, dark)
+                AppGroupedCard(
+                    rows = listOf(
+                        {
+                            DetailRow(
+                                stringResource(R.string.order_detail_status),
+                                order.status?.let { stringResource(it.nameRes) } ?: unknown,
+                                leading = { CircleIcon(symbol.icon, symbol.color) },
+                                bold = true,
+                            )
+                        },
+                        {
+                            DetailRow(
+                                stringResource(R.string.order_form_fulfillment),
+                                order.fulfillment?.let { stringResource(it.nameRes) } ?: unknown,
+                            )
+                        },
                     ),
+                    dividerInset = 16.dp,
                 )
             }
             item("items") { ItemsCard(order) }
@@ -145,20 +182,51 @@ internal fun OrderDetail(
                     )
                 }
             }
+            if (drafts.isNotEmpty()) {
+                item("calendarExport") {
+                    val hint = stringResource(R.string.calendar_export_open_hint)
+                    val red = AppAccentColor.Red.color(dark)
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        AppSectionLabel(stringResource(R.string.calendar_export_section), color = MaterialTheme.colorScheme.primary)
+                        AppGroupedCard(
+                            rows = drafts.map { draft ->
+                                {
+                                    ActionRow(
+                                        icon = if (draft.kind == OrderCalendarEventKind.Production) AppIcons.Hammer else AppIcons.Box,
+                                        iconColor = red,
+                                        title = stringResource(
+                                            if (draft.kind == OrderCalendarEventKind.Production) R.string.calendar_export_production_action
+                                            else R.string.calendar_export_shipping_action,
+                                        ),
+                                        textColor = MaterialTheme.colorScheme.primary,
+                                        value = dayMonth(draft.startDate, zone),
+                                        hint = hint,
+                                        onClick = { CalendarExport.open(context, draft, zone) },
+                                    )
+                                }
+                            },
+                            dividerInset = 60.dp,
+                        )
+                    }
+                }
+            }
             if (action != null) {
                 item("advance") {
-                    AppSecondaryButton(onClick = { onAdvance(action) }, color = action.color, modifier = Modifier.fillMaxWidth()) {
-                        Icon(action.icon, contentDescription = null, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.size(8.dp))
-                        Text(stringResource(action.titleRes), fontWeight = FontWeight.SemiBold)
-                    }
+                    AppGroupedCard(
+                        rows = listOf({
+                            ActionRow(action.icon, action.color, stringResource(action.titleRes), action.color, onClick = { onAdvance(action) })
+                        }),
+                    )
                 }
             }
             if (OrderPresentation.canCancel(order)) {
                 item("cancel") {
-                    AppSecondaryButton(onClick = onCancel, color = AppAccentColor.Red.color(dark), modifier = Modifier.fillMaxWidth()) {
-                        Text(stringResource(R.string.order_action_cancel), fontWeight = FontWeight.SemiBold)
-                    }
+                    val red = AppAccentColor.Red.color(dark)
+                    AppGroupedCard(
+                        rows = listOf({
+                            ActionRow(AppIcons.CancelCircle, red, stringResource(R.string.order_action_cancel), red, onClick = onCancel)
+                        }),
+                    )
                 }
             }
             item("bottom") { Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars)) }
@@ -176,7 +244,7 @@ private val OrderFulfillment.nameRes: Int
 @Composable
 private fun DetailCard(title: String?, rows: List<Pair<String, String>>) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        title?.let { AppSectionLabel(it) }
+        title?.let { AppSectionLabel(it, color = MaterialTheme.colorScheme.primary) }
         AppGroupedCard(
             rows = rows.map { (label, value) -> @Composable { DetailRow(label, value) } },
             dividerInset = 16.dp,
@@ -185,18 +253,53 @@ private fun DetailCard(title: String?, rows: List<Pair<String, String>>) {
 }
 
 @Composable
-private fun DetailRow(label: String, value: String) {
+private fun DetailRow(
+    label: String,
+    value: String,
+    leading: (@Composable () -> Unit)? = null,
+    bold: Boolean = false,
+) {
     val modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) { }.padding(horizontal = 16.dp, vertical = 12.dp)
+    val weight = if (bold) FontWeight.SemiBold else null
     when {
         value.isEmpty() -> Box(modifier) { Text(label) }
         isLargeFont() -> Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            leading?.invoke()
             Text(label)
-            Text(value, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(value, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = weight)
         }
-        else -> Row(modifier, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        else -> Row(modifier, horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            leading?.invoke()
             Text(label)
-            Text(value, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
+            Text(value, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = weight, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
         }
+    }
+}
+
+/** Linha de acao: icone no circulo e o texto na cor da acao, com um valor opcional a direita. */
+@Composable
+private fun ActionRow(
+    icon: ImageVector,
+    iconColor: Color,
+    title: String,
+    textColor: Color,
+    value: String? = null,
+    hint: String? = null,
+    onClick: () -> Unit,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .clickable(role = Role.Button, onClickLabel = hint, onClick = onClick)
+            .semantics(mergeDescendants = true) { }
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        CircleIcon(icon, iconColor)
+        Text(title, color = textColor, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+        value?.let { Text(it, color = textColor.copy(alpha = 0.7f)) }
     }
 }
 
@@ -204,7 +307,7 @@ private fun DetailRow(label: String, value: String) {
 private fun ItemsCard(order: SalesOrder) {
     val quantityLabel = stringResource(R.string.order_form_quantity)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        AppSectionLabel(stringResource(R.string.order_detail_items))
+        AppSectionLabel(stringResource(R.string.order_detail_items), color = MaterialTheme.colorScheme.primary)
         AppGroupedCard(
             rows = order.itemList.map { item ->
                 @Composable {
@@ -241,4 +344,11 @@ private fun ItemsCard(order: SalesOrder) {
             dividerInset = 16.dp,
         )
     }
+}
+
+/** Dia e mes sem o ano ("21 de set."), como o `.day().month(.abbreviated)` do iOS. */
+private fun dayMonth(date: java.time.Instant, zone: ZoneId): String {
+    val locale = java.util.Locale.getDefault()
+    val pattern = android.text.format.DateFormat.getBestDateTimePattern(locale, "dMMM")
+    return date.atZone(zone).format(java.time.format.DateTimeFormatter.ofPattern(pattern, locale))
 }

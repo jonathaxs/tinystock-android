@@ -60,6 +60,9 @@ import com.jonathaxs.tinystock.ui.products.PriceField
 import com.jonathaxs.tinystock.ui.products.ProductDetailScreen
 import com.jonathaxs.tinystock.ui.products.ProductFormScreen
 import com.jonathaxs.tinystock.ui.products.StockEntryScreen
+import com.jonathaxs.tinystock.ui.sales.OrderEditScreen
+import com.jonathaxs.tinystock.ui.sales.SaleFormScreen
+import com.jonathaxs.tinystock.ui.settings.StoreFormScreen
 import com.jonathaxs.tinystock.ui.reports.ReportsScreen
 import com.jonathaxs.tinystock.ui.settings.ColorSettingsScreen
 import com.jonathaxs.tinystock.ui.settings.SettingsPage
@@ -84,6 +87,11 @@ private fun variantEditRoute(productID: UUID, variantID: UUID? = null) =
     "variant/edit/$productID?variant=${variantID ?: ""}"
 
 private fun stockEntryRoute(productID: UUID) = "stock/$productID?variant="
+
+private const val ROUTE_SALE = "sale/new?product={product}"
+private const val ROUTE_STORE_EDIT = "store/edit"
+
+private fun saleRoute(productID: UUID? = null) = "sale/new?product=${productID ?: ""}"
 
 private fun NavBackStackEntry.uuid(name: String): UUID? =
     arguments?.getString(name)?.takeIf { it.isNotEmpty() }?.let(UUID::fromString)
@@ -128,9 +136,7 @@ private fun MainScreen(viewModel: MainViewModel) {
     val selectedStore by viewModel.selectedStore.collectAsStateWithLifecycle()
     val stores by viewModel.activeStores.collectAsStateWithLifecycle()
     val accent by viewModel.accentColor.collectAsStateWithLifecycle()
-    var comingSoon by rememberSaveable { mutableStateOf<String?>(null) }
     val storeName = selectedStore?.name ?: stringResource(R.string.store_default_name)
-    val saleTitle = stringResource(R.string.sale_new_title)
 
     NavHost(navController, startDestination = ROUTE_HOME) {
         composable(ROUTE_HOME) {
@@ -149,14 +155,14 @@ private fun MainScreen(viewModel: MainViewModel) {
                 },
                 onAdd = { action ->
                     when (action) {
-                        HomeAddAction.Sale -> comingSoon = saleTitle
+                        HomeAddAction.Sale -> navController.navigate(saleRoute())
                         HomeAddAction.Product -> navController.navigate(productFormRoute())
                         HomeAddAction.Variant -> navController.navigate("variant/new?product=")
                     }
                 },
                 onProductAction = { action, product ->
                     when (action) {
-                        ProductAction.Sale -> comingSoon = saleTitle
+                        ProductAction.Sale -> navController.navigate(saleRoute(product.id))
                         ProductAction.StockEntry -> navController.navigate(stockEntryRoute(product.id))
                         ProductAction.NewVariant -> navController.navigate("variant/new?product=${product.id}")
                         ProductAction.EditVariant -> navController.navigate(variantEditRoute(product.id))
@@ -165,7 +171,7 @@ private fun MainScreen(viewModel: MainViewModel) {
                     }
                 },
                 onEditVariant = { variant -> navController.navigate(variantEditRoute(variant.productID, variant.id)) },
-                onComingSoon = { comingSoon = it },
+                onEditStore = { navController.navigate(ROUTE_STORE_EDIT) { launchSingleTop = true } },
             )
         }
         val close: () -> Unit = { navController.popBackStack() }
@@ -177,6 +183,14 @@ private fun MainScreen(viewModel: MainViewModel) {
                 initialFocus = entry.arguments?.getString("focus")?.let { name -> PriceField.entries.firstOrNull { it.name == name } },
                 onClose = close,
             )
+        }
+        composable(ROUTE_SALE, arguments = listOf(optionalArgument("product"))) { entry ->
+            val id = storeID ?: return@composable
+            SaleFormScreen(storeID = id, fixedProductID = entry.uuid("product"), onClose = close)
+        }
+        composable(ROUTE_STORE_EDIT) {
+            val id = storeID ?: return@composable
+            StoreFormScreen(storeID = id, onClose = close)
         }
         composable(ROUTE_PRODUCT_DETAIL) { entry ->
             val id = storeID ?: return@composable
@@ -229,33 +243,35 @@ private fun MainScreen(viewModel: MainViewModel) {
             containerColor = MaterialTheme.colorScheme.background,
             dragHandle = null,
         ) {
-            SheetHeader(
-                title = stringResource(if (sheet == AppSheet.Reports) R.string.tab_reports else R.string.tab_sales),
-                subtitle = storeName,
-                onClose = viewModel::dismissSheet,
-            )
             val id = storeID
-            when {
-                id == null -> Unit
-                // Toque numa fila: troca a sheet pela do Calendario ja filtrado, como no iOS.
-                sheet == AppSheet.Reports -> ReportsScreen(storeID = id, onOpenCalendar = viewModel::openCalendar)
-                else -> CalendarScreen(
-                    storeID = id,
-                    filterRequest = viewModel.calendarFilterRequest,
-                    onFilterRequestHandled = viewModel::consumeCalendarFilterRequest,
-                )
+            Box {
+                Column {
+                    SheetHeader(
+                        title = stringResource(if (sheet == AppSheet.Reports) R.string.tab_reports else R.string.tab_sales),
+                        subtitle = storeName,
+                        onClose = viewModel::dismissSheet,
+                    )
+                    when {
+                        id == null -> Unit
+                        // Toque numa fila: troca a sheet pela do Calendario ja filtrado, como no iOS.
+                        sheet == AppSheet.Reports -> ReportsScreen(storeID = id, onOpenCalendar = viewModel::openCalendar)
+                        else -> CalendarScreen(
+                            storeID = id,
+                            filterRequest = viewModel.calendarFilterRequest,
+                            onFilterRequestHandled = viewModel::consumeCalendarFilterRequest,
+                            storeName = storeName,
+                            onEditOrder = { viewModel.editOrder(it.id) },
+                        )
+                    }
+                }
+                // Editar pedido cobre a sheet inteira (com o proprio X e o ✓) sem desmontar o Calendario,
+                // que volta no mesmo pedido ao fechar.
+                val editing = viewModel.editingOrderID
+                if (editing != null && id != null) {
+                    OrderEditScreen(storeID = id, orderID = editing, onClose = { viewModel.editOrder(null) })
+                }
             }
         }
-    }
-
-    comingSoon?.let { title ->
-        AlertDialog(
-            onDismissRequest = { comingSoon = null },
-            icon = { Icon(Icons.Filled.Build, contentDescription = null) },
-            title = { Text(title) },
-            text = { Text(stringResource(R.string.coming_soon_message)) },
-            confirmButton = { TextButton(onClick = { comingSoon = null }) { Text(stringResource(R.string.common_ok)) } },
-        )
     }
 }
 

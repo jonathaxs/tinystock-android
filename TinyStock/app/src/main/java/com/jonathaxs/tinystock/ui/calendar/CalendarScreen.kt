@@ -78,6 +78,8 @@ fun CalendarScreen(
     storeID: UUID,
     filterRequest: CalendarOrderFilter?,
     onFilterRequestHandled: () -> Unit,
+    storeName: String,
+    onEditOrder: (SalesOrder) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CalendarViewModel = viewModel(),
 ) {
@@ -128,7 +130,9 @@ fun CalendarScreen(
             OrderDetail(
                 order = openOrder,
                 zone = zone,
+                storeName = storeName,
                 onBack = { openOrderID = null },
+                onEdit = { onEditOrder(openOrder) },
                 onAdvance = { viewModel.transition(openOrder, it.status) },
                 onCancel = { cancellingID = openOrder.id.toString() },
             )

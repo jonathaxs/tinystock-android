@@ -12,4 +12,8 @@
     <string name="a11y_decrease">Diminuir</string>
     <string name="a11y_increase">Aumentar</string>
     <string name="a11y_delete">Apagar</string>
+
+    <!-- Exportar prazos do pedido: no Android vai para o app de agenda do aparelho. -->
+    <string name="calendar_export_section">Agenda do celular</string>
+    <string name="calendar_export_unavailable">Nenhum app de agenda encontrado para adicionar este evento.</string>
 </resources>

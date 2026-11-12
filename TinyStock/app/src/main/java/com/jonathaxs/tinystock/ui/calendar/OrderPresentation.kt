@@ -131,6 +131,12 @@ internal object OrderPresentation {
 
     fun canCancel(order: SalesOrder): Boolean = order.canTransition(SalesOrderStatus.Cancelled)
 
+    /** Editar so enquanto o pedido nao saiu: despachado, concluido ou cancelado fica como esta. */
+    fun canEdit(order: SalesOrder): Boolean {
+        val status = order.status ?: return false
+        return !status.isTerminal && status != SalesOrderStatus.Shipped
+    }
+
     fun queueDate(order: SalesOrder): Instant = when (order.status) {
         SalesOrderStatus.AwaitingProduction, SalesOrderStatus.InProduction ->
             order.productionDueAt ?: order.shippingDueAt ?: order.orderedAt

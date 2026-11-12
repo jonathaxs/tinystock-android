@@ -11,6 +11,7 @@ import com.jonathaxs.tinystock.core.data.ImageFileStore
 import com.jonathaxs.tinystock.core.data.TinyStockStore
 import com.jonathaxs.tinystock.core.model.Product
 import com.jonathaxs.tinystock.core.model.ProductVariant
+import com.jonathaxs.tinystock.core.model.SalesOrder
 import com.jonathaxs.tinystock.ui.form.PhotoDraft
 import com.jonathaxs.tinystock.ui.form.productErrorMessage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,6 +29,7 @@ import java.util.UUID
 data class CatalogData(
     val products: List<Product> = emptyList(),
     val variants: List<ProductVariant> = emptyList(),
+    val orders: List<SalesOrder> = emptyList(),
     val loaded: Boolean = false,
 ) {
     fun product(id: UUID?): Product? = products.firstOrNull { it.id == id }
@@ -52,8 +54,8 @@ class ProductFormsViewModel(application: Application) : AndroidViewModel(applica
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val data: StateFlow<CatalogData> = storeID.filterNotNull().flatMapLatest { id ->
-        combine(store.observeProducts(id), store.observeVariants(id)) { products, variants ->
-            CatalogData(products.sortedWith(compareBy<Product> { it.sortOrder }.thenBy { it.name }), variants, loaded = true)
+        combine(store.observeProducts(id), store.observeVariants(id), store.observeOrders(id)) { products, variants, orders ->
+            CatalogData(products.sortedWith(compareBy<Product> { it.sortOrder }.thenBy { it.name }), variants, orders, loaded = true)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CatalogData())
 
@@ -87,7 +89,13 @@ class ProductFormsViewModel(application: Application) : AndroidViewModel(applica
      * Grava a foto (se houver), roda [block] com o nome dela e fecha a tela no sucesso. Em falha desfaz a
      * foto nova e mostra o erro; o banco ja volta atras pela transacao do servico.
      */
-    fun save(photo: PhotoDraft?, onSuccess: () -> Unit, block: suspend (imageFileName: String?) -> Unit) {
+    fun save(
+        photo: PhotoDraft?,
+        onSuccess: () -> Unit,
+        /** Texto do erro; o padrao cobre produto, variacao e estoque. */
+        describe: (Throwable) -> FormError = { FormError(productErrorMessage(it), it.localizedMessage) },
+        block: suspend (imageFileName: String?) -> Unit,
+    ) {
         if (isSaving) return
         isSaving = true
         viewModelScope.launch {
@@ -99,7 +107,7 @@ class ProductFormsViewModel(application: Application) : AndroidViewModel(applica
                 onSuccess()
             } catch (failure: Exception) {
                 photo?.finish(images, written, succeeded = false)
-                error = FormError(productErrorMessage(failure), failure.localizedMessage)
+                error = describe(failure)
             } finally {
                 isSaving = false
             }
