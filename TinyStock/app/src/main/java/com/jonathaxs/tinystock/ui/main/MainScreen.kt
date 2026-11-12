@@ -41,14 +41,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
+import androidx.navigation.navArgument
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.jonathaxs.tinystock.R
 import com.jonathaxs.tinystock.ui.components.AppCircleButton
 import com.jonathaxs.tinystock.ui.components.ComingSoonPage
 import com.jonathaxs.tinystock.ui.calendar.CalendarScreen
+import com.jonathaxs.tinystock.ui.home.HomeAddAction
 import com.jonathaxs.tinystock.ui.home.HomeScreen
+import com.jonathaxs.tinystock.ui.home.ProductAction
+import com.jonathaxs.tinystock.ui.products.EditVariantScreen
+import com.jonathaxs.tinystock.ui.products.NewVariantScreen
+import com.jonathaxs.tinystock.ui.products.PriceField
+import com.jonathaxs.tinystock.ui.products.ProductDetailScreen
+import com.jonathaxs.tinystock.ui.products.ProductFormScreen
+import com.jonathaxs.tinystock.ui.products.StockEntryScreen
 import com.jonathaxs.tinystock.ui.reports.ReportsScreen
 import com.jonathaxs.tinystock.ui.settings.ColorSettingsScreen
 import com.jonathaxs.tinystock.ui.settings.SettingsPage
@@ -56,9 +67,31 @@ import com.jonathaxs.tinystock.ui.settings.SettingsScreen
 import com.jonathaxs.tinystock.ui.theme.TinyStockTheme
 import com.jonathaxs.tinystock.ui.util.ApplyOrientationLock
 import com.jonathaxs.tinystock.ui.welcome.WelcomeScreen
+import java.util.UUID
 
 private const val ROUTE_HOME = "home"
 private const val ROUTE_SETTINGS = "settings"
+private const val ROUTE_PRODUCT_FORM = "product/form?id={id}&focus={focus}"
+private const val ROUTE_PRODUCT_DETAIL = "product/detail/{id}"
+private const val ROUTE_VARIANT_NEW = "variant/new?product={product}"
+private const val ROUTE_VARIANT_EDIT = "variant/edit/{product}?variant={variant}"
+private const val ROUTE_STOCK_ENTRY = "stock/{product}?variant={variant}"
+
+private fun productFormRoute(id: UUID? = null, focus: PriceField? = null) =
+    "product/form?id=${id ?: ""}&focus=${focus?.name ?: ""}"
+
+private fun variantEditRoute(productID: UUID, variantID: UUID? = null) =
+    "variant/edit/$productID?variant=${variantID ?: ""}"
+
+private fun stockEntryRoute(productID: UUID) = "stock/$productID?variant="
+
+private fun NavBackStackEntry.uuid(name: String): UUID? =
+    arguments?.getString(name)?.takeIf { it.isNotEmpty() }?.let(UUID::fromString)
+
+private fun optionalArgument(name: String) = navArgument(name) {
+    type = NavType.StringType
+    defaultValue = ""
+}
 
 private fun settingsRoute(page: SettingsPage) = "$ROUTE_SETTINGS/${page.name}"
 
@@ -97,6 +130,7 @@ private fun MainScreen(viewModel: MainViewModel) {
     val accent by viewModel.accentColor.collectAsStateWithLifecycle()
     var comingSoon by rememberSaveable { mutableStateOf<String?>(null) }
     val storeName = selectedStore?.name ?: stringResource(R.string.store_default_name)
+    val saleTitle = stringResource(R.string.sale_new_title)
 
     NavHost(navController, startDestination = ROUTE_HOME) {
         composable(ROUTE_HOME) {
@@ -113,8 +147,61 @@ private fun MainScreen(viewModel: MainViewModel) {
                     viewModel.dismissSheet()
                     navController.navigate(ROUTE_SETTINGS) { launchSingleTop = true }
                 },
+                onAdd = { action ->
+                    when (action) {
+                        HomeAddAction.Sale -> comingSoon = saleTitle
+                        HomeAddAction.Product -> navController.navigate(productFormRoute())
+                        HomeAddAction.Variant -> navController.navigate("variant/new?product=")
+                    }
+                },
+                onProductAction = { action, product ->
+                    when (action) {
+                        ProductAction.Sale -> comingSoon = saleTitle
+                        ProductAction.StockEntry -> navController.navigate(stockEntryRoute(product.id))
+                        ProductAction.NewVariant -> navController.navigate("variant/new?product=${product.id}")
+                        ProductAction.EditVariant -> navController.navigate(variantEditRoute(product.id))
+                        ProductAction.Edit -> navController.navigate(productFormRoute(product.id))
+                        ProductAction.Details -> navController.navigate("product/detail/${product.id}")
+                    }
+                },
+                onEditVariant = { variant -> navController.navigate(variantEditRoute(variant.productID, variant.id)) },
                 onComingSoon = { comingSoon = it },
             )
+        }
+        val close: () -> Unit = { navController.popBackStack() }
+        composable(ROUTE_PRODUCT_FORM, arguments = listOf(optionalArgument("id"), optionalArgument("focus"))) { entry ->
+            val id = storeID ?: return@composable
+            ProductFormScreen(
+                storeID = id,
+                productID = entry.uuid("id"),
+                initialFocus = entry.arguments?.getString("focus")?.let { name -> PriceField.entries.firstOrNull { it.name == name } },
+                onClose = close,
+            )
+        }
+        composable(ROUTE_PRODUCT_DETAIL) { entry ->
+            val id = storeID ?: return@composable
+            val productID = entry.uuid("id") ?: return@composable
+            ProductDetailScreen(
+                storeID = id,
+                productID = productID,
+                onClose = close,
+                onEditProduct = { focus -> navController.navigate(productFormRoute(productID, focus)) },
+                onEditVariant = { variant -> navController.navigate(variantEditRoute(productID, variant.id)) },
+            )
+        }
+        composable(ROUTE_VARIANT_NEW, arguments = listOf(optionalArgument("product"))) { entry ->
+            val id = storeID ?: return@composable
+            NewVariantScreen(storeID = id, initialProductID = entry.uuid("product"), onClose = close)
+        }
+        composable(ROUTE_VARIANT_EDIT, arguments = listOf(optionalArgument("variant"))) { entry ->
+            val id = storeID ?: return@composable
+            val productID = entry.uuid("product") ?: return@composable
+            EditVariantScreen(storeID = id, productID = productID, initialVariantID = entry.uuid("variant"), onClose = close)
+        }
+        composable(ROUTE_STOCK_ENTRY, arguments = listOf(optionalArgument("variant"))) { entry ->
+            val id = storeID ?: return@composable
+            val productID = entry.uuid("product") ?: return@composable
+            StockEntryScreen(storeID = id, productID = productID, initialVariantID = entry.uuid("variant"), onClose = close)
         }
         composable(ROUTE_SETTINGS) {
             SettingsScreen(

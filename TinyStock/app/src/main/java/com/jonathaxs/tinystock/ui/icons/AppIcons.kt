@@ -326,6 +326,65 @@ object AppIcons {
         }
     }
 
+    /** Equivale ao "camera.fill" do iOS. */
+    val Camera: ImageVector by lazy {
+        strokeIcon("Camera") {
+            moveTo(9f, 4f)
+            lineTo(7.2f, 6f)
+            horizontalLineTo(4.5f)
+            curveTo(3.1f, 6f, 2f, 7.1f, 2f, 8.5f)
+            verticalLineTo(17.5f)
+            curveTo(2f, 18.9f, 3.1f, 20f, 4.5f, 20f)
+            horizontalLineTo(19.5f)
+            curveTo(20.9f, 20f, 22f, 18.9f, 22f, 17.5f)
+            verticalLineTo(8.5f)
+            curveTo(22f, 7.1f, 20.9f, 6f, 19.5f, 6f)
+            horizontalLineTo(16.8f)
+            lineTo(15f, 4f)
+            close()
+            moveTo(12f, 9f)
+            arcToRelative(4f, 4f, 0f, isMoreThanHalf = true, isPositiveArc = false, dx1 = 0f, dy1 = 8f)
+            arcToRelative(4f, 4f, 0f, isMoreThanHalf = true, isPositiveArc = false, dx1 = 0f, dy1 = -8f)
+            close()
+        }
+    }
+
+    /** Equivale ao "photo" do iOS: moldura com montanha e sol. */
+    val Photo: ImageVector by lazy {
+        strokeIcon("Photo") {
+            moveTo(5.5f, 4.5f)
+            horizontalLineTo(18.5f)
+            curveTo(19.6f, 4.5f, 20.5f, 5.4f, 20.5f, 6.5f)
+            verticalLineTo(17.5f)
+            curveTo(20.5f, 18.6f, 19.6f, 19.5f, 18.5f, 19.5f)
+            horizontalLineTo(5.5f)
+            curveTo(4.4f, 19.5f, 3.5f, 18.6f, 3.5f, 17.5f)
+            verticalLineTo(6.5f)
+            curveTo(3.5f, 5.4f, 4.4f, 4.5f, 5.5f, 4.5f)
+            close()
+            moveTo(3.5f, 16f)
+            lineTo(8.5f, 11f)
+            lineTo(13f, 15.5f)
+            lineTo(15.5f, 13f)
+            lineTo(20.5f, 18f)
+            circle(15.5f, 8.5f, 1.4f)
+        }
+    }
+
+    /** Equivale ao "pencil" do iOS. */
+    val Pencil: ImageVector by lazy {
+        strokeIcon("Pencil") {
+            moveTo(4f, 20f)
+            lineTo(5f, 15.5f)
+            lineTo(15.5f, 5f)
+            lineTo(19f, 8.5f)
+            lineTo(8.5f, 19f)
+            close()
+            moveTo(13.5f, 7f)
+            lineTo(17f, 10.5f)
+        }
+    }
+
     private fun androidx.compose.ui.graphics.vector.PathBuilder.circle(cx: Float, cy: Float, r: Float) {
         moveTo(cx - r, cy)
         arcToRelative(r, r, 0f, isMoreThanHalf = true, isPositiveArc = true, dx1 = 2 * r, dy1 = 0f)

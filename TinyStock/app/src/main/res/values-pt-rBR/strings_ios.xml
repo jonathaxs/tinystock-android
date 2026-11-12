@@ -18,6 +18,8 @@
     <string name="common_delete">Excluir</string>
     <string name="common_ok">OK</string>
     <string name="common_close">Fechar</string>
+    <string name="common_decrease">Diminuir</string>
+    <string name="common_increase">Aumentar</string>
 
     <!-- Produtos -->
     <string name="products_empty_title">Nenhum produto ainda</string>

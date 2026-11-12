@@ -171,7 +171,7 @@ fun ProductCatalogGrid(
 
 /** Balao com o nome, "estoque · preco" e as 6 acoes, no estilo do Adicionar. */
 @Composable
-private fun ProductActionsPopover(product: Product, quantity: String, onPick: (ProductAction) -> Unit) {
+internal fun ProductActionsPopover(product: Product, quantity: String, onPick: (ProductAction) -> Unit) {
     Column(
         Modifier
             .heightIn(max = 520.dp)

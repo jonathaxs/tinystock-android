@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -59,11 +60,14 @@ import com.jonathaxs.tinystock.core.model.ProductVariant
 import com.jonathaxs.tinystock.core.model.StoreProfile
 import com.jonathaxs.tinystock.core.service.ProductVariantService
 import com.jonathaxs.tinystock.ui.components.AppGroupedCard
+import com.jonathaxs.tinystock.ui.components.AppPopover
 import com.jonathaxs.tinystock.ui.components.AppSectionLabel
 import com.jonathaxs.tinystock.ui.components.AppStyle
 import com.jonathaxs.tinystock.ui.components.ProductImage
 import com.jonathaxs.tinystock.ui.components.appCard
 import com.jonathaxs.tinystock.ui.icons.AppIcons
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.UUID
 
@@ -80,7 +84,12 @@ fun HomeScreen(
     onReports: () -> Unit,
     onCalendar: () -> Unit,
     onSettings: () -> Unit,
-    /** Telas ainda nao portadas (formularios, edicao da loja): abre o aviso "em construcao". */
+    /** Botao Adicionar: nova venda, novo produto ou nova variacao. */
+    onAdd: (HomeAddAction) -> Unit,
+    /** Acao escolhida no balao de um produto (lista ou grade). */
+    onProductAction: (ProductAction, Product) -> Unit,
+    onEditVariant: (ProductVariant) -> Unit,
+    /** Telas ainda nao portadas (edicao da loja): abre o aviso "em construcao". */
     onComingSoon: (title: String) -> Unit,
     viewModel: HomeViewModel = viewModel(),
 ) {
@@ -91,14 +100,7 @@ fun HomeScreen(
     val viewMode by viewModel.viewMode.collectAsStateWithLifecycle()
 
     val filtered = remember(data, search) { data.products.filter { it.matches(search, data.variants) } }
-    val titles = mapOf(
-        HomeAddAction.Sale to stringResource(R.string.sale_new_title),
-        HomeAddAction.Product to stringResource(R.string.product_form_title_new),
-        HomeAddAction.Variant to stringResource(R.string.stock_entry_newVariant),
-    )
     val editStoreTitle = stringResource(R.string.store_form_title_edit)
-    val editVariantTitle = stringResource(R.string.product_variant_edit_title)
-    val actionTitles = ProductAction.entries.associateWith { stringResource(it.titleRes) }
 
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         LazyColumn(
@@ -123,7 +125,7 @@ fun HomeScreen(
             item("hero") { HomeHero(data.products, data.variants, data.orders) }
             item("pages") { HomePageButtons(viewMode, viewModel::toggleViewMode, onReports, onCalendar, onSettings) }
             item("add") {
-                HomeAddButton(hasProducts = data.products.isNotEmpty()) { action -> onComingSoon(titles.getValue(action)) }
+                HomeAddButton(hasProducts = data.products.isNotEmpty(), onPick = onAdd)
             }
 
             if (!data.loaded) return@LazyColumn
@@ -137,28 +139,26 @@ fun HomeScreen(
                 item("noResults") { NoResults(search) }
             } else if (viewMode == CatalogViewMode.Grid && mode == CatalogMode.Products) {
                 item("productsGrid") {
-                    ProductCatalogGrid(filtered, data.variants) { action, _ -> onComingSoon(actionTitles.getValue(action)) }
+                    ProductCatalogGrid(filtered, data.variants, onProductAction)
                 }
             } else if (viewMode == CatalogViewMode.Grid) {
                 items(filtered, key = { it.id }) { product ->
                     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         AppSectionLabel(product.name)
-                        VariantCatalogGrid(data.variants.filter { it.belongsTo(product) }.sortedBy { it.name }) {
-                            onComingSoon(editVariantTitle)
-                        }
+                        VariantCatalogGrid(data.variants.filter { it.belongsTo(product) }.sortedBy { it.name }, onEditVariant)
                         Spacer(Modifier.size(4.dp))
                     }
                 }
             } else if (mode == CatalogMode.Products) {
                 item("products") {
                     AppGroupedCard(
-                        rows = filtered.map { product -> { ProductRow(product, data.variants) } },
+                        rows = filtered.map { product -> { ProductRow(product, data.variants, onProductAction) } },
                         dividerInset = 80.dp,
                     )
                 }
             } else {
                 items(filtered, key = { it.id }) { product ->
-                    VariantSection(product, data.variants.filter { it.belongsTo(product) }.sortedBy { it.name })
+                    VariantSection(product, data.variants.filter { it.belongsTo(product) }.sortedBy { it.name }, onEditVariant)
                 }
             }
         }
@@ -286,11 +286,15 @@ private fun NoResults(search: String) {
 }
 
 @Composable
-private fun ProductRow(product: Product, variants: List<ProductVariant>) {
+private fun ProductRow(product: Product, variants: List<ProductVariant>, onAction: (ProductAction, Product) -> Unit) {
     val quantity = NumberFormat.getNumberInstance().format(ProductVariantService.displayedQuantity(product, variants))
+    var open by rememberSaveable(product.id) { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    Box {
     Row(
         Modifier
             .fillMaxWidth()
+            .clickable(role = Role.Button, onClickLabel = stringResource(R.string.products_grid_hint)) { open = true }
             .padding(horizontal = 14.dp, vertical = 10.dp)
             .semantics(mergeDescendants = true) { },
         verticalAlignment = Alignment.CenterVertically,
@@ -311,14 +315,25 @@ private fun ProductRow(product: Product, variants: List<ProductVariant>) {
             )
         }
     }
+    // Mesmo balao de acoes da grade (no iOS a lista abre a folha de acoes).
+    AppPopover(expanded = open, onDismiss = { open = false }) {
+        ProductActionsPopover(product, stringResource(R.string.products_catalog_quantity, quantity)) { action ->
+            open = false
+            scope.launch {
+                delay(200)
+                onAction(action, product)
+            }
+        }
+    }
+    }
 }
 
 @Composable
-private fun VariantSection(product: Product, variants: List<ProductVariant>) {
+private fun VariantSection(product: Product, variants: List<ProductVariant>, onSelect: (ProductVariant) -> Unit) {
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         AppSectionLabel(product.name)
         AppGroupedCard(
-            rows = variants.map { variant -> { VariantRow(variant) } },
+            rows = variants.map { variant -> { VariantRow(variant, onSelect) } },
             dividerInset = 70.dp,
         )
         Spacer(Modifier.size(4.dp))
@@ -326,10 +341,11 @@ private fun VariantSection(product: Product, variants: List<ProductVariant>) {
 }
 
 @Composable
-private fun VariantRow(variant: ProductVariant) {
+private fun VariantRow(variant: ProductVariant, onSelect: (ProductVariant) -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
+            .clickable(role = Role.Button) { onSelect(variant) }
             .padding(horizontal = 14.dp, vertical = 8.dp)
             .semantics(mergeDescendants = true) { },
         verticalAlignment = Alignment.CenterVertically,

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pasta temporaria onde a camera grava a foto do produto antes de ela ser reduzida. -->
+<paths>
+    <cache-path name="camera" path="camera/" />
+</paths>
