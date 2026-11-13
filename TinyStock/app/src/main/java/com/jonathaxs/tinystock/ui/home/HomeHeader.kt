@@ -4,6 +4,7 @@ import android.provider.Settings
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -30,7 +31,9 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -344,6 +347,52 @@ fun HomePageButtons(
         AppCircleButton(AppIcons.BarChart, stringResource(R.string.tab_reports), onReports)
         AppCircleButton(Icons.Filled.DateRange, stringResource(R.string.tab_sales), onCalendar)
         AppCircleButton(Icons.Filled.Settings, stringResource(R.string.tab_settings), onSettings)
+    }
+}
+
+/**
+ * Coluna de vidro com os mesmos botoes, na vertical (tablet deitado), porte do `HomeSideRail` do iOS, no
+ * estilo da barra vertical do iPhone Duo.
+ */
+@Composable
+fun HomeSideRail(
+    viewMode: CatalogViewMode,
+    onToggleViewMode: () -> Unit,
+    onReports: () -> Unit,
+    onCalendar: () -> Unit,
+    onSettings: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val haptics = LocalHapticFeedback.current
+    val tint = MaterialTheme.colorScheme.primary
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(32.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)),
+        shadowElevation = 4.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            IconButton(onClick = {
+                haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                onToggleViewMode()
+            }) {
+                Icon(
+                    if (viewMode == CatalogViewMode.List) AppIcons.Grid else AppIcons.ListBullet,
+                    contentDescription = stringResource(
+                        if (viewMode == CatalogViewMode.List) R.string.products_viewMode_showGrid else R.string.products_viewMode_showList,
+                    ),
+                    tint = tint,
+                )
+            }
+            IconButton(onClick = onReports) { Icon(AppIcons.BarChart, stringResource(R.string.tab_reports), tint = tint) }
+            IconButton(onClick = onCalendar) { Icon(Icons.Filled.DateRange, stringResource(R.string.tab_sales), tint = tint) }
+            IconButton(onClick = onSettings) { Icon(Icons.Filled.Settings, stringResource(R.string.tab_settings), tint = tint) }
+        }
     }
 }
 

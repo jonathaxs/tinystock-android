@@ -31,7 +31,7 @@ fun ApplyOrientationLock() {
 }
 
 /** Sobe a cadeia de ContextWrapper ate achar a Activity (ou null fora dela). */
-private fun Context.findActivity(): Activity? {
+internal fun Context.findActivity(): Activity? {
     var ctx: Context? = this
     while (ctx is ContextWrapper) {
         if (ctx is Activity) return ctx

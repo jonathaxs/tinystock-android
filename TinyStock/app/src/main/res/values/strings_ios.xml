@@ -20,6 +20,7 @@
     <string name="common_close">Close</string>
     <string name="common_decrease">Decrease</string>
     <string name="common_increase">Increase</string>
+    <string name="common_clear">Clear</string>
 
     <!-- Products -->
     <string name="products_empty_title">No products yet</string>
