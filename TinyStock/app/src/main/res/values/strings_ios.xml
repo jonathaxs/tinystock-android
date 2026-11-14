@@ -177,7 +177,6 @@
     <string name="stores_title">Stores</string>
     <string name="stores_add">Add store</string>
     <string name="stores_section_active">Active</string>
-    <string name="stores_section_archived">Archived</string>
     <string name="stores_section_organization">Organization</string>
     <string name="stores_section_footer">Each store keeps its products, orders and reports separate.</string>
     <string name="stores_archived_title">Archived Stores</string>
@@ -224,7 +223,6 @@
     <string name="product_form_variant_edit_hint">Opens the variation editor.</string>
     <string name="products_delete_stock_message">The product, its variations and stock movements will be deleted. Recorded sales will be kept. This cannot be undone.</string>
     <string name="products_error_title">Unable to delete product</string>
-    <string name="stock_entry_title">Stock entry</string>
     <string name="stock_entry_navigationTitle">Entry</string>
     <string name="stock_entry_newVariant">New variation</string>
     <string name="stock_entry_new">New stock</string>
@@ -233,7 +231,6 @@
     <string name="product_variant_edit_stock">Stock</string>
     <string name="product_variant_new_defaultFooter">This product has no variations yet. Edit the product and turn on Has variations before adding another.</string>
     <string name="stock_entry_quantity">Stock entry</string>
-    <string name="stock_entry_result">Stock after entry</string>
     <string name="stock_entry_note">Note</string>
     <string name="stock_entry_error">Unable to register stock entry</string>
     <string name="order_channel_direct">Direct sale</string>
@@ -310,8 +307,6 @@
     <string name="order_queue_unknown">Unknown status</string>
     <string name="order_queue_untitled">Order without items</string>
     <string name="order_queue_moreItems">%1$s and %2$s more</string>
-    <string name="order_queue_itemMetadata">%1$s · %2$s units</string>
-    <string name="order_queue_quantityMetadata">%s units</string>
     <string name="order_queue_productionDate">Produce by %s</string>
     <string name="order_queue_shippingDate">Ship by %s</string>
     <string name="order_queue_shippedDate">Shipped %s</string>
@@ -423,7 +418,6 @@
     <string name="settings_about_feedback">Send feedback</string>
     <string name="settings_about_website">Developer website</string>
     <string name="settings_about_versionBuild">Version %1$s (%2$s)</string>
-    <string name="settings_about_icon">TinyStock app icon</string>
     <string name="settings_privacy_title">Privacy</string>
     <string name="settings_privacy_local_title">Data on this device</string>
     <string name="settings_privacy_local_message">Products, inventory, stores and orders are stored by TinyStock on your device. TinyStock does not require an account and does not send this data to the developer.</string>

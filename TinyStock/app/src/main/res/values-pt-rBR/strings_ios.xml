@@ -177,7 +177,6 @@
     <string name="stores_title">Lojas</string>
     <string name="stores_add">Adicionar loja</string>
     <string name="stores_section_active">Ativas</string>
-    <string name="stores_section_archived">Arquivadas</string>
     <string name="stores_section_organization">Organização</string>
     <string name="stores_section_footer">Cada loja mantém seus produtos, pedidos e relatórios separados.</string>
     <string name="stores_archived_title">Lojas arquivadas</string>
@@ -224,7 +223,6 @@
     <string name="product_form_variant_edit_hint">Abre o editor da variação.</string>
     <string name="products_delete_stock_message">O produto, suas variações e movimentações de estoque serão excluídos. As vendas registradas serão mantidas. Esta ação não pode ser desfeita.</string>
     <string name="products_error_title">Não foi possível excluir o produto</string>
-    <string name="stock_entry_title">Entrada de estoque</string>
     <string name="stock_entry_navigationTitle">Entrada</string>
     <string name="stock_entry_newVariant">Nova variação</string>
     <string name="stock_entry_new">Novo estoque</string>
@@ -233,7 +231,6 @@
     <string name="product_variant_edit_stock">Estoque</string>
     <string name="product_variant_new_defaultFooter">Este produto ainda não tem variações. Edite o produto e ative Possui variações antes de cadastrar outra.</string>
     <string name="stock_entry_quantity">Entrada de estoque</string>
-    <string name="stock_entry_result">Estoque após a entrada</string>
     <string name="stock_entry_note">Observação</string>
     <string name="stock_entry_error">Não foi possível registrar a entrada</string>
     <string name="order_channel_direct">Venda direta</string>
@@ -310,8 +307,6 @@
     <string name="order_queue_unknown">Estado desconhecido</string>
     <string name="order_queue_untitled">Pedido sem itens</string>
     <string name="order_queue_moreItems">%1$s e mais %2$s</string>
-    <string name="order_queue_itemMetadata">%1$s · %2$s unidades</string>
-    <string name="order_queue_quantityMetadata">%s unidades</string>
     <string name="order_queue_productionDate">Produzir até %s</string>
     <string name="order_queue_shippingDate">Despachar até %s</string>
     <string name="order_queue_shippedDate">Despachado em %s</string>
@@ -423,7 +418,6 @@
     <string name="settings_about_feedback">Enviar feedback</string>
     <string name="settings_about_website">Site do desenvolvedor</string>
     <string name="settings_about_versionBuild">Versão %1$s (%2$s)</string>
-    <string name="settings_about_icon">Ícone do app TinyStock</string>
     <string name="settings_privacy_title">Privacidade</string>
     <string name="settings_privacy_local_title">Dados neste dispositivo</string>
     <string name="settings_privacy_local_message">Produtos, estoque, lojas e pedidos são armazenados pelo TinyStock no dispositivo. O TinyStock não exige uma conta e não envia esses dados ao desenvolvedor.</string>
