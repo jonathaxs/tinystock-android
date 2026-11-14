@@ -6,6 +6,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -42,6 +44,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -82,11 +85,13 @@ import com.jonathaxs.tinystock.ui.components.AppStyle
 import com.jonathaxs.tinystock.ui.components.IconBadge
 import com.jonathaxs.tinystock.ui.components.appCard
 import com.jonathaxs.tinystock.ui.icons.AppIcons
+import com.jonathaxs.tinystock.ui.util.rememberIsTablet
 import java.util.UUID
 
 /**
  * Apresentacao da primeira abertura: Inicio > O que da para fazer > Sua loja > Tudo pronto. Porte do
  * `WelcomeView` do iOS (C3.2). Restaurar backup abre direto o seletor de arquivos (sem iCloud).
+ * Na janela larga (tablet, dobravel aberto) o titulo da etapa e os botoes vao para um painel a esquerda (C9b).
  */
 @Composable
 fun WelcomeScreen(
@@ -99,54 +104,77 @@ fun WelcomeScreen(
         uri?.let(viewModel::readBackup)
     }
     BackHandler(enabled = viewModel.step != WelcomeStep.Start) { viewModel.goBack() }
+    val isTablet = rememberIsTablet()
+    // Arquivos .json nem sempre vem marcados como JSON no Android.
+    val onRestore = { picker.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) }
 
-    Box(
+    BoxWithConstraints(
         Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             // Brilho suave da cor de destaque no topo.
             .background(Brush.verticalGradient(0f to accent.copy(alpha = 0.22f), 0.5f to Color.Transparent)),
     ) {
-        Column(
-            Modifier
-                .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.safeDrawing)
-                .imePadding()
-                .widthIn(max = 600.dp)
-                .align(Alignment.TopCenter),
-        ) {
-            WelcomeProgressBar(viewModel.step)
-            AnimatedContent(
-                targetState = viewModel.step,
-                transitionSpec = {
-                    val forward = viewModel.isGoingForward
-                    slideInHorizontally(tween(300)) { if (forward) it else -it } togetherWith
-                        slideOutHorizontally(tween(300)) { if (forward) -it else it }
-                },
-                modifier = Modifier.weight(1f),
-                label = "welcomeStep",
-            ) { step ->
-                when (step) {
-                    WelcomeStep.Start -> WelcomeStartStep(
-                        onStart = { viewModel.advance(onComplete) },
-                        // Arquivos .json nem sempre vem marcados como JSON no Android.
-                        onRestore = { picker.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
-                    )
-                    WelcomeStep.About -> WelcomeAboutStep()
-                    WelcomeStep.Store -> WelcomeStoreStep(
-                        name = viewModel.storeName,
-                        onNameChange = { viewModel.storeName = it },
-                        onSubmit = { viewModel.advance(onComplete) },
-                    )
-                    WelcomeStep.Ready -> WelcomeReadyStep()
-                }
-            }
-            if (viewModel.step != WelcomeStep.Start) {
-                FooterButtons(
+        // Mesma regra de largura da Inicio (A11).
+        val isWide = maxWidth >= 700.dp || (maxWidth >= 560.dp && isTablet)
+        val panelWidth = if (maxWidth < 744.dp) 320.dp else 360.dp
+        Row(Modifier.fillMaxSize()) {
+            if (isWide) {
+                WelcomeContextPanel(
+                    step = viewModel.step,
                     continueLabel = continueLabel(viewModel.step, viewModel.storeName),
                     onContinue = { viewModel.advance(onComplete) },
                     onBack = viewModel::goBack,
+                    onRestore = onRestore,
+                    modifier = Modifier.width(panelWidth),
                 )
+                VerticalDivider()
+            }
+            Box(Modifier.weight(1f).fillMaxHeight()) {
+                Column(
+                    Modifier
+                        .align(Alignment.TopCenter)
+                        .widthIn(max = 600.dp)
+                        .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                        .imePadding(),
+                ) {
+                    WelcomeProgressBar(viewModel.step)
+                    AnimatedContent(
+                        targetState = viewModel.step,
+                        transitionSpec = {
+                            val forward = viewModel.isGoingForward
+                            slideInHorizontally(tween(300)) { if (forward) it else -it } togetherWith
+                                slideOutHorizontally(tween(300)) { if (forward) -it else it }
+                        },
+                        modifier = Modifier.weight(1f),
+                        label = "welcomeStep",
+                    ) { step ->
+                        when (step) {
+                            WelcomeStep.Start -> WelcomeStartStep(
+                                onStart = { viewModel.advance(onComplete) },
+                                onRestore = onRestore,
+                                showsButtons = !isWide,
+                            )
+                            WelcomeStep.About -> WelcomeAboutStep(showsHeader = !isWide)
+                            WelcomeStep.Store -> WelcomeStoreStep(
+                                name = viewModel.storeName,
+                                onNameChange = { viewModel.storeName = it },
+                                onSubmit = { viewModel.advance(onComplete) },
+                                showsHeader = !isWide,
+                            )
+                            WelcomeStep.Ready -> WelcomeReadyStep(showsHeader = !isWide)
+                        }
+                    }
+                    // No layout largo os botoes ficam no painel da esquerda.
+                    if (viewModel.step != WelcomeStep.Start && !isWide) {
+                        FooterButtons(
+                            continueLabel = continueLabel(viewModel.step, viewModel.storeName),
+                            onContinue = { viewModel.advance(onComplete) },
+                            onBack = viewModel::goBack,
+                        )
+                    }
+                }
             }
         }
 
@@ -203,6 +231,22 @@ fun WelcomeScreen(
             },
         )
     }
+}
+
+@Composable
+private fun stepTitle(step: WelcomeStep): String = when (step) {
+    WelcomeStep.Start -> stringResource(R.string.welcome_step_start_title)
+    WelcomeStep.About -> stringResource(R.string.welcome_step_about_title)
+    WelcomeStep.Store -> stringResource(R.string.welcome_step_store_title)
+    WelcomeStep.Ready -> stringResource(R.string.welcome_step_ready_title)
+}
+
+@Composable
+private fun stepSubtitle(step: WelcomeStep): String? = when (step) {
+    WelcomeStep.Start -> stringResource(R.string.welcome_step_start_subtitle)
+    WelcomeStep.About -> null
+    WelcomeStep.Store -> stringResource(R.string.welcome_step_store_subtitle)
+    WelcomeStep.Ready -> stringResource(R.string.welcome_step_ready_subtitle)
 }
 
 @Composable
@@ -298,6 +342,59 @@ private fun StepScroll(content: @Composable () -> Unit) {
     }
 }
 
+/**
+ * Painel a esquerda no layout largo: cabecalho da etapa atual e os botoes no rodape. No Inicio fica so o par
+ * Comecar / Restaurar backup, centralizado, porque o "Ola!" ja esta no conteudo a direita.
+ */
+@Composable
+private fun WelcomeContextPanel(
+    step: WelcomeStep,
+    continueLabel: String,
+    onContinue: () -> Unit,
+    onBack: () -> Unit,
+    onRestore: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val isStart = step == WelcomeStep.Start
+    Column(
+        modifier
+            .fillMaxHeight()
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.6f))
+            .windowInsetsPadding(WindowInsets.safeDrawing)
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Crossfade(targetState = step, animationSpec = tween(300), label = "welcomePanelHeader") { current ->
+                if (current != WelcomeStep.Start) {
+                    WelcomeStepHeader(current, stepTitle(current), stepSubtitle(current))
+                }
+            }
+        }
+        Column(
+            Modifier
+                .then(if (isStart) Modifier.width(260.dp) else Modifier.fillMaxWidth())
+                .padding(bottom = if (isStart) 0.dp else 24.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            AppProminentButton(onClick = onContinue, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    if (isStart) stringResource(R.string.welcome_button_start) else continueLabel,
+                    fontWeight = FontWeight.SemiBold, fontSize = 17.sp,
+                )
+            }
+            AppSecondaryButton(onClick = if (isStart) onRestore else onBack, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    stringResource(if (isStart) R.string.welcome_start_restore else R.string.welcome_button_back),
+                    fontWeight = FontWeight.SemiBold, fontSize = 17.sp,
+                )
+            }
+        }
+        // No Inicio um espaco igual ao de cima centraliza os botoes.
+        if (isStart) Spacer(Modifier.weight(1f))
+    }
+}
+
 @Composable
 private fun FooterButtons(continueLabel: String, onContinue: () -> Unit, onBack: () -> Unit) {
     Column(
@@ -321,31 +418,37 @@ private fun FooterButtons(continueLabel: String, onContinue: () -> Unit, onBack:
 // region Etapas
 
 @Composable
-private fun WelcomeStartStep(onStart: () -> Unit, onRestore: () -> Unit) {
+private fun WelcomeStartStep(onStart: () -> Unit, onRestore: () -> Unit, showsButtons: Boolean) {
     StepScroll {
         WelcomeStepHeader(
             WelcomeStep.Start,
             stringResource(R.string.welcome_step_start_title),
             stringResource(R.string.welcome_step_start_subtitle),
         )
-        Spacer(Modifier.size(28.dp))
-        // No Inicio os botoes ficam logo abaixo do "Ola!", mais estreitos.
-        Column(Modifier.width(260.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            AppProminentButton(onClick = onStart, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.welcome_button_start), fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
-            }
-            AppSecondaryButton(onClick = onRestore, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.welcome_start_restore), fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+        // No layout largo os botoes ficam no painel da esquerda.
+        if (showsButtons) {
+            Spacer(Modifier.size(28.dp))
+            // No Inicio os botoes ficam logo abaixo do "Ola!", mais estreitos.
+            Column(Modifier.width(260.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                AppProminentButton(onClick = onStart, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.welcome_button_start), fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+                }
+                AppSecondaryButton(onClick = onRestore, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.welcome_start_restore), fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+                }
             }
         }
     }
 }
 
 @Composable
-private fun WelcomeAboutStep() {
+private fun WelcomeAboutStep(showsHeader: Boolean) {
     StepScroll {
-        WelcomeStepHeader(WelcomeStep.About, stringResource(R.string.welcome_step_about_title), null)
-        Spacer(Modifier.size(20.dp))
+        // No layout largo o cabecalho fica no painel da esquerda.
+        if (showsHeader) {
+            WelcomeStepHeader(WelcomeStep.About, stringResource(R.string.welcome_step_about_title), null)
+            Spacer(Modifier.size(20.dp))
+        }
         AppGroupedCard(
             dividerInset = 66.dp,
             rows = listOf(
@@ -377,15 +480,17 @@ private fun Feature(icon: ImageVector, color: Color, title: Int, desc: Int) {
 }
 
 @Composable
-private fun WelcomeStoreStep(name: String, onNameChange: (String) -> Unit, onSubmit: () -> Unit) {
+private fun WelcomeStoreStep(name: String, onNameChange: (String) -> Unit, onSubmit: () -> Unit, showsHeader: Boolean) {
     val label = stringResource(R.string.welcome_store_field)
     StepScroll {
-        WelcomeStepHeader(
-            WelcomeStep.Store,
-            stringResource(R.string.welcome_step_store_title),
-            stringResource(R.string.welcome_step_store_subtitle),
-        )
-        Spacer(Modifier.size(20.dp))
+        if (showsHeader) {
+            WelcomeStepHeader(
+                WelcomeStep.Store,
+                stringResource(R.string.welcome_step_store_title),
+                stringResource(R.string.welcome_step_store_subtitle),
+            )
+            Spacer(Modifier.size(20.dp))
+        }
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             AppSectionLabel(label)
             Box(
@@ -417,7 +522,7 @@ private fun WelcomeStoreStep(name: String, onNameChange: (String) -> Unit, onSub
 private enum class PermissionState { Idle, Allowed, Denied }
 
 @Composable
-private fun WelcomeReadyStep() {
+private fun WelcomeReadyStep(showsHeader: Boolean) {
     val context = LocalContext.current
     var asked by rememberSaveable { mutableStateOf(false) }
     var enabled by rememberSaveable { mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled()) }
@@ -436,12 +541,14 @@ private fun WelcomeReadyStep() {
         else -> PermissionState.Idle
     }
     StepScroll {
-        WelcomeStepHeader(
-            WelcomeStep.Ready,
-            stringResource(R.string.welcome_step_ready_title),
-            stringResource(R.string.welcome_step_ready_subtitle),
-        )
-        Spacer(Modifier.size(20.dp))
+        if (showsHeader) {
+            WelcomeStepHeader(
+                WelcomeStep.Ready,
+                stringResource(R.string.welcome_step_ready_title),
+                stringResource(R.string.welcome_step_ready_subtitle),
+            )
+            Spacer(Modifier.size(20.dp))
+        }
         PermissionCard(
             icon = Icons.Filled.Notifications,
             iconColor = Color(0xFFFF3B30),
