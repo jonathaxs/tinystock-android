@@ -26,7 +26,7 @@ import com.jonathaxs.tinystock.ui.products.FormErrorAlert
 import com.jonathaxs.tinystock.ui.products.ProductFormsViewModel
 import java.util.UUID
 
-private fun storeErrorMessage(error: Throwable): FormError {
+internal fun storeErrorMessage(error: Throwable): FormError {
     val res = when ((error as? DomainException)?.error) {
         StoreProfileError.EmptyName -> R.string.store_error_emptyName
         StoreProfileError.DuplicateName -> R.string.store_error_duplicateName
@@ -40,27 +40,41 @@ private fun storeErrorMessage(error: Throwable): FormError {
 }
 
 /**
- * Edicao da loja atual: foto e nome. Porte do `StoreFormView` (o cadastro de loja nova chega com a pagina
- * Lojas dos Ajustes).
+ * Cadastro e edicao de loja: foto e nome. Porte do `StoreFormView` do iOS.
  */
 @Composable
 fun StoreFormScreen(
-    storeID: UUID,
+    storeID: UUID?,
     onClose: () -> Unit,
+    onCreated: (StoreProfile) -> Unit = {},
     viewModel: ProductFormsViewModel = viewModel(),
 ) {
     var loaded by remember { mutableStateOf<StoreProfile?>(null) }
-    LaunchedEffect(storeID) { loaded = viewModel.store.store(storeID) }
-    val store = loaded ?: return
-    var name by rememberSaveable { mutableStateOf(store.name) }
-    val photo = viewModel.photo(store.id.toString(), store.imageFileName)
+    LaunchedEffect(storeID) {
+        if (storeID != null) loaded = viewModel.store.store(storeID)
+    }
+    val editing = if (storeID != null) loaded ?: return else null
+    var name by rememberSaveable(editing?.id) { mutableStateOf(editing?.name.orEmpty()) }
+    val photo = viewModel.photo(editing?.id?.toString() ?: "new", editing?.imageFileName)
 
     FormPage(
-        title = stringResource(R.string.store_form_title_edit),
+        title = stringResource(if (editing == null) R.string.store_form_title_new else R.string.store_form_title_edit),
         onClose = onClose,
         onConfirm = {
-            viewModel.save(photo, onSuccess = onClose, describe = ::storeErrorMessage) { imageFileName ->
-                StoreProfileService.update(store, name, imageFileName, store = viewModel.store)
+            var created: StoreProfile? = null
+            viewModel.save(
+                photo,
+                onSuccess = {
+                    created?.let(onCreated)
+                    onClose()
+                },
+                describe = ::storeErrorMessage,
+            ) { imageFileName ->
+                if (editing != null) {
+                    StoreProfileService.update(editing, name, imageFileName, store = viewModel.store)
+                } else {
+                    created = StoreProfileService.create(name, imageFileName, store = viewModel.store)
+                }
             }
         },
         confirmEnabled = name.isNotBlank() && !photo.isProcessing && !viewModel.isSaving,

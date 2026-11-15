@@ -22,4 +22,11 @@
     <!-- Exportar prazos do pedido: no Android vai para o app de agenda do aparelho. -->
     <string name="calendar_export_section">Phone calendar</string>
     <string name="calendar_export_unavailable">No calendar app found to add this event.</string>
+
+    <!-- Reordenar lojas pelo menu da linha. -->
+    <string name="stores_move_up">Move up</string>
+    <string name="stores_move_down">Move down</string>
+
+    <!-- Exclusao de loja: eventos ficam na agenda do aparelho, nao no Calendario do iPhone. -->
+    <string name="stores_delete_confirm_message">\"%1$s\" and all its data will be permanently deleted:\n\nProducts: %2$s\nVariations: %3$s\nStock movements: %4$s\nOrders: %5$s\n\nEvents already saved in the phone calendar will not be changed. This action cannot be undone.</string>
 </resources>

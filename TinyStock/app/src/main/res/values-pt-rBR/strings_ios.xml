@@ -198,7 +198,6 @@
     <string name="stores_trash_confirm_title">Mover loja para a Lixeira?</string>
     <string name="stores_trash_confirm_message">\"%s\" e todos os seus dados permanecerão na Lixeira por 30 dias antes da exclusão permanente.</string>
     <string name="stores_delete_confirm_title">Excluir loja permanentemente?</string>
-    <string name="stores_delete_confirm_message">\"%1$s\" e todos os seus dados serão excluídos permanentemente:\n\nProdutos: %2$s\nVariações: %3$s\nMovimentações de estoque: %4$s\nPedidos: %5$s\n\nEventos já salvos no Calendário do iPhone não serão alterados. Esta ação não pode ser desfeita.</string>
     <string name="settings_store_manage">Gerenciar lojas</string>
 
     <!-- Erro do banco de dados -->

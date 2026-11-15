@@ -198,7 +198,6 @@
     <string name="stores_trash_confirm_title">Move store to Trash?</string>
     <string name="stores_trash_confirm_message">\"%s\" and all its data will remain in Trash for 30 days before being permanently deleted.</string>
     <string name="stores_delete_confirm_title">Permanently delete store?</string>
-    <string name="stores_delete_confirm_message">\"%1$s\" and all its data will be permanently deleted:\n\nProducts: %2$s\nVariations: %3$s\nStock movements: %4$s\nOrders: %5$s\n\nEvents already saved in the iPhone Calendar will not be changed. This action cannot be undone.</string>
     <string name="settings_store_manage">Manage stores</string>
 
     <!-- Data store error -->

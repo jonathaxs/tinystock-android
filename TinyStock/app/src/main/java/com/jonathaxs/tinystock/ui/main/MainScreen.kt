@@ -62,11 +62,14 @@ import com.jonathaxs.tinystock.ui.products.ProductFormScreen
 import com.jonathaxs.tinystock.ui.products.StockEntryScreen
 import com.jonathaxs.tinystock.ui.sales.OrderEditScreen
 import com.jonathaxs.tinystock.ui.sales.SaleFormScreen
-import com.jonathaxs.tinystock.ui.settings.StoreFormScreen
 import com.jonathaxs.tinystock.ui.reports.ReportsScreen
+import com.jonathaxs.tinystock.ui.settings.ArchivedStoresScreen
 import com.jonathaxs.tinystock.ui.settings.ColorSettingsScreen
 import com.jonathaxs.tinystock.ui.settings.SettingsPage
 import com.jonathaxs.tinystock.ui.settings.SettingsScreen
+import com.jonathaxs.tinystock.ui.settings.StoreFormScreen
+import com.jonathaxs.tinystock.ui.settings.StoresScreen
+import com.jonathaxs.tinystock.ui.settings.TrashedStoresScreen
 import com.jonathaxs.tinystock.ui.theme.TinyStockTheme
 import com.jonathaxs.tinystock.ui.util.ApplyOrientationLock
 import com.jonathaxs.tinystock.ui.welcome.WelcomeScreen
@@ -89,9 +92,14 @@ private fun variantEditRoute(productID: UUID, variantID: UUID? = null) =
 private fun stockEntryRoute(productID: UUID) = "stock/$productID?variant="
 
 private const val ROUTE_SALE = "sale/new?product={product}"
-private const val ROUTE_STORE_EDIT = "store/edit"
+private const val ROUTE_STORE_NEW = "store/new"
+private const val ROUTE_STORE_EDIT = "store/edit?id={id}"
+private const val ROUTE_STORES_ARCHIVED = "store/archived"
+private const val ROUTE_STORES_TRASH = "store/trash"
 
 private fun saleRoute(productID: UUID? = null) = "sale/new?product=${productID ?: ""}"
+
+private fun storeEditRoute(storeID: UUID? = null) = "store/edit?id=${storeID ?: ""}"
 
 private fun NavBackStackEntry.uuid(name: String): UUID? =
     arguments?.getString(name)?.takeIf { it.isNotEmpty() }?.let(UUID::fromString)
@@ -171,7 +179,7 @@ private fun MainScreen(viewModel: MainViewModel) {
                     }
                 },
                 onEditVariant = { variant -> navController.navigate(variantEditRoute(variant.productID, variant.id)) },
-                onEditStore = { navController.navigate(ROUTE_STORE_EDIT) { launchSingleTop = true } },
+                onEditStore = { navController.navigate(storeEditRoute()) { launchSingleTop = true } },
             )
         }
         val close: () -> Unit = { navController.popBackStack() }
@@ -188,9 +196,22 @@ private fun MainScreen(viewModel: MainViewModel) {
             val id = storeID ?: return@composable
             SaleFormScreen(storeID = id, fixedProductID = entry.uuid("product"), onClose = close)
         }
-        composable(ROUTE_STORE_EDIT) {
-            val id = storeID ?: return@composable
+        composable(ROUTE_STORE_NEW) {
+            StoreFormScreen(storeID = null, onClose = close, onCreated = viewModel::select)
+        }
+        composable(ROUTE_STORE_EDIT, arguments = listOf(optionalArgument("id"))) { entry ->
+            val id = entry.uuid("id") ?: storeID ?: return@composable
             StoreFormScreen(storeID = id, onClose = close)
+        }
+        composable(ROUTE_STORES_ARCHIVED) {
+            ArchivedStoresScreen(onBack = close)
+        }
+        composable(ROUTE_STORES_TRASH) {
+            TrashedStoresScreen(
+                selectedStoreID = storeID,
+                onSelectStore = viewModel::select,
+                onBack = close,
+            )
         }
         composable(ROUTE_PRODUCT_DETAIL) { entry ->
             val id = storeID ?: return@composable
@@ -228,6 +249,15 @@ private fun MainScreen(viewModel: MainViewModel) {
             composable(settingsRoute(page)) {
                 val back = { navController.popBackStack(); Unit }
                 when (page) {
+                    SettingsPage.Stores -> StoresScreen(
+                        selectedStoreID = storeID,
+                        onSelectStore = viewModel::select,
+                        onAddStore = { navController.navigate(ROUTE_STORE_NEW) { launchSingleTop = true } },
+                        onEditStore = { store -> navController.navigate(storeEditRoute(store.id)) { launchSingleTop = true } },
+                        onOpenArchived = { navController.navigate(ROUTE_STORES_ARCHIVED) { launchSingleTop = true } },
+                        onOpenTrash = { navController.navigate(ROUTE_STORES_TRASH) { launchSingleTop = true } },
+                        onBack = back,
+                    )
                     SettingsPage.Colors -> ColorSettingsScreen(accent, viewModel::setAccentColor, back)
                     // As outras paginas dos Ajustes chegam nas proximas etapas.
                     else -> ComingSoonPage(title = stringResource(page.titleRes), onBack = back)
