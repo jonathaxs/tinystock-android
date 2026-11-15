@@ -21,7 +21,7 @@ private val Context.appPreferencesStore by preferencesDataStore(name = "app_pref
  * Preferencias do app gravadas em DataStore (equivale ao `UserDefaults` / `@AppStorage` do iOS).
  *
  * Usa os mesmos nomes de chave do iOS: `app.selectedStoreID`, `app.accentColor` e
- * `app.didCompleteWelcome`, `products.catalogMode` e `products.catalogViewMode`.
+ * `app.didCompleteWelcome`, `products.catalogMode`, `products.catalogViewMode` e `calendar.export.enabled`.
  */
 class AppPreferences(
     private val dataStore: DataStore<Preferences>,
@@ -83,6 +83,13 @@ class AppPreferences(
         dataStore.edit { prefs -> prefs[ORDERS_DISPLAY_MODE_PREF_KEY] = rawValue }
     }
 
+    /** Mostrar as opcoes de exportar para a agenda no detalhe do pedido (ligado por padrao, como no iOS). */
+    val calendarExportEnabled: Flow<Boolean> = dataStore.data.map { prefs -> prefs[CALENDAR_EXPORT_PREF_KEY] ?: true }
+
+    suspend fun setCalendarExportEnabled(value: Boolean) {
+        dataStore.edit { prefs -> prefs[CALENDAR_EXPORT_PREF_KEY] = value }
+    }
+
     companion object {
         const val SELECTED_STORE_KEY = StoreSession.SELECTED_STORE_KEY
         const val ACCENT_COLOR_KEY = AppAccentColor.STORAGE_KEY
@@ -90,6 +97,7 @@ class AppPreferences(
         const val CATALOG_MODE_KEY = "products.catalogMode"
         const val CATALOG_VIEW_MODE_KEY = "products.catalogViewMode"
         const val ORDERS_DISPLAY_MODE_KEY = "orders.displayMode"
+        const val CALENDAR_EXPORT_KEY = "calendar.export.enabled"
 
         private val SELECTED_STORE_PREF_KEY = stringPreferencesKey(SELECTED_STORE_KEY)
         private val ACCENT_COLOR_PREF_KEY = stringPreferencesKey(ACCENT_COLOR_KEY)
@@ -97,6 +105,7 @@ class AppPreferences(
         private val CATALOG_MODE_PREF_KEY = stringPreferencesKey(CATALOG_MODE_KEY)
         private val CATALOG_VIEW_MODE_PREF_KEY = stringPreferencesKey(CATALOG_VIEW_MODE_KEY)
         private val ORDERS_DISPLAY_MODE_PREF_KEY = stringPreferencesKey(ORDERS_DISPLAY_MODE_KEY)
+        private val CALENDAR_EXPORT_PREF_KEY = booleanPreferencesKey(CALENDAR_EXPORT_KEY)
 
         fun from(context: Context): AppPreferences =
             AppPreferences(context.applicationContext.appPreferencesStore)

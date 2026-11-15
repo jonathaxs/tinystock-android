@@ -23,4 +23,16 @@
 
     <!-- Exclusao de loja: eventos ficam na agenda do aparelho, nao no Calendario do iPhone. -->
     <string name="stores_delete_confirm_message">\"%1$s\" e todos os seus dados serão excluídos permanentemente:\n\nProdutos: %2$s\nVariações: %3$s\nMovimentações de estoque: %4$s\nPedidos: %5$s\n\nEventos já salvos na agenda do celular não serão alterados. Esta ação não pode ser desfeita.</string>
+
+    <!-- Exportar o backup: falha ao gravar o arquivo escolhido. -->
+    <string name="settings_backup_error_export">Não foi possível salvar o arquivo de backup. Tente novamente.</string>
+
+    <!-- Agenda: no Android o evento abre no app de agenda do aparelho. -->
+    <string name="settings_calendar_title">Agenda do celular</string>
+    <string name="settings_calendar_privacy_message">Cada evento abre no app de agenda para ser revisado antes de salvar. O TinyStock não lê suas agendas.</string>
+
+    <!-- Privacidade sem iCloud: backup em arquivo e o backup do Android. -->
+    <string name="settings_privacy_icloud_title">Backups</string>
+    <string name="settings_privacy_icloud_message">O TinyStock não tem nuvem própria. Um backup só sai do aparelho quando você exporta o arquivo e escolhe onde guardar. O Android também pode incluir os dados do app no backup da sua Conta Google, conforme os ajustes do aparelho.</string>
+    <string name="settings_privacy_notifications_message">Os lembretes de pedidos são agendados localmente pelo Android. A permissão e a entrega das notificações são controladas nos ajustes do Android.</string>
 </resources>

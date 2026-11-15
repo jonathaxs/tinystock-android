@@ -57,14 +57,15 @@ import java.time.Instant
 import java.time.ZoneId
 
 /**
- * Detalhe do pedido com as operacoes validas. Porte do `SalesOrderDetailView`; editar o pedido e
- * exportar para a agenda chegam com os formularios (C8).
+ * Detalhe do pedido com as operacoes validas. Porte do `SalesOrderDetailView`. A exportacao para a
+ * agenda some quando desligada nos Ajustes.
  */
 @Composable
 internal fun OrderDetail(
     order: SalesOrder,
     zone: ZoneId,
     storeName: String,
+    showsCalendarExport: Boolean,
     onBack: () -> Unit,
     onEdit: () -> Unit,
     onAdvance: (OrderQuickAction) -> Unit,
@@ -73,7 +74,7 @@ internal fun OrderDetail(
     val dark = isSystemInDarkTheme()
     val action = OrderPresentation.quickAction(order, dark)
     val context = LocalContext.current
-    val drafts = OrderCalendarExportPlanner.drafts(order, storeName, zone)
+    val drafts = if (showsCalendarExport) OrderCalendarExportPlanner.drafts(order, storeName, zone) else emptyList()
     Column(Modifier.fillMaxSize()) {
         Row(
             Modifier.padding(horizontal = 16.dp, vertical = 4.dp),

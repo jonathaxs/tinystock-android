@@ -420,16 +420,11 @@
     <string name="settings_privacy_title">Privacidade</string>
     <string name="settings_privacy_local_title">Dados neste dispositivo</string>
     <string name="settings_privacy_local_message">Produtos, estoque, lojas e pedidos são armazenados pelo TinyStock no dispositivo. O TinyStock não exige uma conta e não envia esses dados ao desenvolvedor.</string>
-    <string name="settings_privacy_icloud_title">Serviços Apple</string>
-    <string name="settings_privacy_icloud_message">Ao usar recursos de backup ou sincronização, os dados podem ser armazenados na sua conta privada do iCloud e tratados conforme os ajustes da sua Conta Apple.</string>
     <string name="settings_privacy_notifications_title">Notificações</string>
-    <string name="settings_privacy_notifications_message">Os lembretes de pedidos são agendados localmente pelo iOS. A permissão e a entrega das notificações são controladas nos Ajustes do iOS.</string>
-    <string name="settings_calendar_title">Calendário do iPhone</string>
     <string name="settings_calendar_export_section">Exportação de eventos</string>
     <string name="settings_calendar_showExport">Mostrar opções de exportação</string>
     <string name="settings_calendar_showExport_footer">Quando ativado, pedidos elegíveis oferecem eventos de produção e despacho para exportação.</string>
     <string name="settings_calendar_privacy">Privacidade</string>
-    <string name="settings_calendar_privacy_message">Cada evento é revisado no editor do Calendário da Apple antes de ser salvo. O TinyStock não lê seus calendários.</string>
     <string name="calendar_export_production_action">Adicionar produção</string>
     <string name="calendar_export_shipping_action">Adicionar despacho</string>
     <string name="calendar_export_production_title">Produzir: %s</string>

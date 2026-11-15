@@ -385,6 +385,48 @@ object AppIcons {
         }
     }
 
+    /** Equivale ao "square.and.arrow.up" do iOS: bandeja com seta para cima. */
+    val ArrowUpTray: ImageVector by lazy {
+        strokeIcon("ArrowUpTray") {
+            moveTo(8.5f, 9.5f)
+            horizontalLineTo(6.5f)
+            arcToRelative(1.5f, 1.5f, 0f, false, false, -1.5f, 1.5f)
+            verticalLineTo(19f)
+            arcToRelative(1.5f, 1.5f, 0f, false, false, 1.5f, 1.5f)
+            horizontalLineTo(17.5f)
+            arcToRelative(1.5f, 1.5f, 0f, false, false, 1.5f, -1.5f)
+            verticalLineTo(11f)
+            arcToRelative(1.5f, 1.5f, 0f, false, false, -1.5f, -1.5f)
+            horizontalLineTo(15.5f)
+            moveTo(12f, 14.5f)
+            verticalLineTo(3.5f)
+            moveTo(8.5f, 7f)
+            lineTo(12f, 3.5f)
+            lineTo(15.5f, 7f)
+        }
+    }
+
+    /** Equivale ao "square.and.arrow.down" do iOS: bandeja com seta para baixo. */
+    val ArrowDownTray: ImageVector by lazy {
+        strokeIcon("ArrowDownTray") {
+            moveTo(8.5f, 9.5f)
+            horizontalLineTo(6.5f)
+            arcToRelative(1.5f, 1.5f, 0f, false, false, -1.5f, 1.5f)
+            verticalLineTo(19f)
+            arcToRelative(1.5f, 1.5f, 0f, false, false, 1.5f, 1.5f)
+            horizontalLineTo(17.5f)
+            arcToRelative(1.5f, 1.5f, 0f, false, false, 1.5f, -1.5f)
+            verticalLineTo(11f)
+            arcToRelative(1.5f, 1.5f, 0f, false, false, -1.5f, -1.5f)
+            horizontalLineTo(15.5f)
+            moveTo(12f, 3.5f)
+            verticalLineTo(14.5f)
+            moveTo(8.5f, 11f)
+            lineTo(12f, 14.5f)
+            lineTo(15.5f, 11f)
+        }
+    }
+
     private fun androidx.compose.ui.graphics.vector.PathBuilder.circle(cx: Float, cy: Float, r: Float) {
         moveTo(cx - r, cy)
         arcToRelative(r, r, 0f, isMoreThanHalf = true, isPositiveArc = true, dx1 = 2 * r, dy1 = 0f)

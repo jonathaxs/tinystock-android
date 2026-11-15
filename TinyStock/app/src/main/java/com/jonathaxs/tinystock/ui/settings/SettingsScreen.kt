@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
@@ -51,12 +52,13 @@ import com.jonathaxs.tinystock.ui.icons.AppIcons
 import com.jonathaxs.tinystock.ui.theme.color
 
 /**
- * Paginas dos Ajustes, na ordem da lista. Porte do `SettingsPage` do iOS, sem o Calendario do iPhone
- * (no Android a exportacao de evento sera decidida depois).
+ * Paginas dos Ajustes, na ordem da lista. Porte do `SettingsPage` do iOS; o Calendario do iPhone vira a
+ * agenda do celular.
  */
 enum class SettingsPage(val titleRes: Int) {
     Stores(R.string.stores_title),
     Notifications(R.string.notifications_title),
+    Calendar(R.string.settings_calendar_title),
     Backup(R.string.settings_backup_title),
     Colors(R.string.settings_color_title),
     About(R.string.settings_about_title),
@@ -66,6 +68,7 @@ enum class SettingsPage(val titleRes: Int) {
         get() = when (this) {
             Stores -> AppIcons.Storefront
             Notifications -> Icons.Filled.Notifications
+            Calendar -> Icons.Filled.DateRange
             Backup -> AppIcons.Drive
             Colors -> AppIcons.Palette
             About -> Icons.Filled.Info
@@ -75,7 +78,7 @@ enum class SettingsPage(val titleRes: Int) {
     /** Mesmas cores de sistema do iOS. */
     fun color(dark: Boolean): Color = when (this) {
         Stores -> AppAccentColor.Orange.color(dark)
-        Notifications -> AppAccentColor.Red.color(dark)
+        Notifications, Calendar -> AppAccentColor.Red.color(dark)
         Backup, About -> systemGray(dark)
         Colors -> AppAccentColor.Pink.color(dark)
         Privacy -> AppAccentColor.Blue.color(dark)
@@ -107,6 +110,7 @@ fun SettingsScreen(selectedStore: StoreProfile?, onOpen: (SettingsPage) -> Unit,
                 Section(stringResource(R.string.settings_section_system), accent) {
                     listOf<@Composable () -> Unit>(
                         { PageRow(SettingsPage.Notifications, onOpen) },
+                        { PageRow(SettingsPage.Calendar, onOpen) },
                         { PageRow(SettingsPage.Backup, onOpen) },
                         { LanguageRow { openLanguageSettings(context) } },
                     )

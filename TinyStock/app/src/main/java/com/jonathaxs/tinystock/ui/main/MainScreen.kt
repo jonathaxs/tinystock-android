@@ -65,6 +65,10 @@ import com.jonathaxs.tinystock.ui.sales.SaleFormScreen
 import com.jonathaxs.tinystock.ui.reports.ReportsScreen
 import com.jonathaxs.tinystock.ui.settings.ArchivedStoresScreen
 import com.jonathaxs.tinystock.ui.settings.ColorSettingsScreen
+import com.jonathaxs.tinystock.ui.settings.AboutScreen
+import com.jonathaxs.tinystock.ui.settings.BackupSettingsScreen
+import com.jonathaxs.tinystock.ui.settings.CalendarExportSettingsScreen
+import com.jonathaxs.tinystock.ui.settings.PrivacyScreen
 import com.jonathaxs.tinystock.ui.settings.SettingsPage
 import com.jonathaxs.tinystock.ui.settings.SettingsScreen
 import com.jonathaxs.tinystock.ui.settings.StoreFormScreen
@@ -259,8 +263,19 @@ private fun MainScreen(viewModel: MainViewModel) {
                         onBack = back,
                     )
                     SettingsPage.Colors -> ColorSettingsScreen(accent, viewModel::setAccentColor, back)
-                    // As outras paginas dos Ajustes chegam nas proximas etapas.
-                    else -> ComingSoonPage(title = stringResource(page.titleRes), onBack = back)
+                    SettingsPage.Calendar -> {
+                        val enabled by viewModel.calendarExportEnabled.collectAsStateWithLifecycle()
+                        CalendarExportSettingsScreen(enabled, viewModel::setCalendarExportEnabled, back)
+                    }
+                    SettingsPage.Backup -> BackupSettingsScreen(
+                        selectedStoreID = storeID,
+                        onRestored = viewModel::onBackupRestored,
+                        onBack = back,
+                    )
+                    SettingsPage.About -> AboutScreen(back)
+                    SettingsPage.Privacy -> PrivacyScreen(back)
+                    // Notificacoes chega na proxima etapa, com os lembretes.
+                    SettingsPage.Notifications -> ComingSoonPage(title = stringResource(page.titleRes), onBack = back)
                 }
             }
         }

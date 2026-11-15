@@ -57,6 +57,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, LaunchState.Loading)
 
+    /** Mostrar a exportacao para a agenda no detalhe do pedido. */
+    val calendarExportEnabled: StateFlow<Boolean> = preferences.calendarExportEnabled
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
     /** Lojas ativas na ordem escolhida pelo usuario. */
     val activeStores: StateFlow<List<StoreProfile>> = store.observeStores()
         .map { stores -> StoreProfileService.orderedForDisplay(stores.filter { it.isActive }) }
@@ -135,6 +139,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setAccentColor(color: AppAccentColor) {
         viewModelScope.launch { preferences.setAccentColor(color) }
+    }
+
+    fun setCalendarExportEnabled(value: Boolean) {
+        viewModelScope.launch { preferences.setCalendarExportEnabled(value) }
     }
 
     fun completeWelcome() {

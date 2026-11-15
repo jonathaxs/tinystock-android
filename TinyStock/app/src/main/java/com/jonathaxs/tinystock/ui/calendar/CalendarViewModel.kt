@@ -49,6 +49,10 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
         .map { OrderDisplayMode.fromRawValue(it) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, OrderDisplayMode.Day)
 
+    /** Ajuste "Mostrar opcoes de exportacao" da pagina Agenda dos Ajustes. */
+    val calendarExportEnabled: StateFlow<Boolean> = preferences.calendarExportEnabled
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
     /** Erro da ultima operacao, mostrado num alerta. */
     @get:StringRes
     var errorRes by mutableStateOf<Int?>(null)

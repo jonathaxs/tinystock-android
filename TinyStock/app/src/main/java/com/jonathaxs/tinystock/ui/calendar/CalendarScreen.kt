@@ -86,6 +86,7 @@ fun CalendarScreen(
     LaunchedEffect(storeID) { viewModel.setStore(storeID) }
     val orders by viewModel.orders.collectAsStateWithLifecycle()
     val displayMode by viewModel.displayMode.collectAsStateWithLifecycle()
+    val calendarExportEnabled by viewModel.calendarExportEnabled.collectAsStateWithLifecycle()
     val zone = ZoneId.systemDefault()
 
     // Filtro e dia voltam ao padrao ao trocar de loja, como no iOS.
@@ -131,6 +132,7 @@ fun CalendarScreen(
                 order = openOrder,
                 zone = zone,
                 storeName = storeName,
+                showsCalendarExport = calendarExportEnabled,
                 onBack = { openOrderID = null },
                 onEdit = { onEditOrder(openOrder) },
                 onAdvance = { viewModel.transition(openOrder, it.status) },
