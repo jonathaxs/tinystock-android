@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icone monocromatico da barra de status: uma caixa, como o estoque do app. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,2L3,6.5V17.5L12,22L21,17.5V6.5L12,2ZM12,4.24L18.53,7.5L12,10.76L5.47,7.5L12,4.24ZM5,9.12L11,12.12V19.38L5,16.38V9.12ZM13,19.38V12.12L19,9.12V16.38L13,19.38Z" />
+</vector>

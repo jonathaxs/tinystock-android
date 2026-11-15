@@ -4,9 +4,11 @@
 <resources>
     <string name="app_name" translatable="false">TinyStock</string>
 
-    <!-- Telas ainda nao portadas do iOS. Saem quando cada uma chegar. -->
-    <string name="coming_soon_title">Coming soon</string>
-    <string name="coming_soon_message">This screen is still being brought over from the iPhone version.</string>
+    <!-- Lembretes: permissao e canal sem som do Android. -->
+    <string name="notifications_permission">Android permission</string>
+    <string name="notifications_authorization_denied">Blocked on Android</string>
+    <string name="notifications_error_permission">Android did not complete the permission request. Try again.</string>
+    <string name="notifications_channel_silent">Order reminders without sound</string>
 
     <!-- Backup v1 (anterior as lojas): so o iOS restaura. -->
     <string name="backup_error_legacy">This backup is from an older version of TinyStock. Open it on the iPhone, export it again and import the new file.</string>

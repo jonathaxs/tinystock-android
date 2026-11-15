@@ -51,6 +51,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -73,8 +75,11 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jonathaxs.tinystock.TinyStockApplication
+import com.jonathaxs.tinystock.core.service.OrderReminderAuthorization
+import kotlinx.coroutines.launch
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jonathaxs.tinystock.R
 import com.jonathaxs.tinystock.ui.components.AppGroupedCard
@@ -521,23 +526,26 @@ private fun WelcomeStoreStep(name: String, onNameChange: (String) -> Unit, onSub
 
 private enum class PermissionState { Idle, Allowed, Denied }
 
+/** Pedido opcional dos lembretes de producao e despacho. Recusar nao bloqueia nada (como no iOS). */
 @Composable
 private fun WelcomeReadyStep(showsHeader: Boolean) {
     val context = LocalContext.current
-    var asked by rememberSaveable { mutableStateOf(false) }
-    var enabled by rememberSaveable { mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled()) }
+    val reminders = remember { (context.applicationContext as TinyStockApplication).container.reminders }
+    val reminderState by reminders.state.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        scope.launch { reminders.onPermissionResult() }
+    }
     // Volta dos ajustes do sistema com a permissao mudada.
     LifecycleResumeEffect(Unit) {
-        enabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
+        reminders.requestRefresh()
         onPauseOrDispose { }
     }
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        asked = true
-        enabled = granted
-    }
-    val state = when {
-        enabled -> PermissionState.Allowed
-        asked || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU -> PermissionState.Denied
+    // Permitida so conta com os lembretes ligados: antes do Android 13 a permissao ja vem liberada.
+    val state = when (reminderState.authorization) {
+        OrderReminderAuthorization.Authorized, OrderReminderAuthorization.Provisional ->
+            if (reminderState.settings.isEnabled) PermissionState.Allowed else PermissionState.Idle
+        OrderReminderAuthorization.Denied -> PermissionState.Denied
         else -> PermissionState.Idle
     }
     StepScroll {
@@ -556,8 +564,12 @@ private fun WelcomeReadyStep(showsHeader: Boolean) {
             desc = stringResource(R.string.welcome_ready_notifications_desc),
             state = state,
             onAllow = {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                scope.launch {
+                    reminders.setEnabled(true)
+                    val notAsked = reminders.state.value.authorization == OrderReminderAuthorization.NotDetermined
+                    if (notAsked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
                 }
             },
         )

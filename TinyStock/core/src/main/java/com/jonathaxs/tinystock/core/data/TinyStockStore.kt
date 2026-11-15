@@ -67,4 +67,7 @@ interface TinyStockStore {
     fun observeVariants(storeID: UUID): Flow<List<ProductVariant>>
     fun observeMovements(storeID: UUID): Flow<List<StockMovement>>
     fun observeOrders(storeID: UUID): Flow<List<SalesOrder>>
+
+    /** Avisa quando lojas ou pedidos de qualquer loja mudam (para renovar os lembretes). */
+    fun observeReminderChanges(): Flow<Unit>
 }

@@ -112,6 +112,8 @@ class InMemoryTinyStockStore : TinyStockStore {
     override fun observeOrders(storeID: UUID): Flow<List<SalesOrder>> =
         observe { orders.values.filter { it.storeID == storeID } }
 
+    override fun observeReminderChanges(): Flow<Unit> = version.map { }
+
     private class Snapshot(
         val stores: LinkedHashMap<UUID, StoreProfile>,
         val products: LinkedHashMap<UUID, Product>,

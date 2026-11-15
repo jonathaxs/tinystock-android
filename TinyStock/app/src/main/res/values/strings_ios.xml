@@ -363,12 +363,10 @@
     <string name="notifications_title">Notifications</string>
     <string name="notifications_enabled">Order reminders</string>
     <string name="notifications_scope">All active stores on this device.</string>
-    <string name="notifications_permission">iOS permission</string>
     <string name="notifications_permission_status">Status</string>
     <string name="notifications_permission_request">Allow notifications</string>
     <string name="notifications_permission_settings">Open notification settings</string>
     <string name="notifications_authorization_notDetermined">Not requested</string>
-    <string name="notifications_authorization_denied">Blocked in iOS</string>
     <string name="notifications_authorization_authorized">Allowed</string>
     <string name="notifications_authorization_provisional">Quiet delivery</string>
     <string name="notifications_authorization_unknown">Unavailable</string>
@@ -387,7 +385,6 @@
     <string name="notifications_capacity_footer">The nearest reminders take priority. Open TinyStock regularly to schedule the remaining reminders as space becomes available.</string>
     <string name="notifications_retry">Try again</string>
     <string name="notifications_error_preferences">Notification preferences could not be loaded or saved. Set your preferences again.</string>
-    <string name="notifications_error_permission">iOS could not complete the permission request. Try again.</string>
     <string name="notifications_error_data">Orders could not be read. Previously scheduled reminders have been kept.</string>
     <string name="notifications_error_scheduling">Some reminders could not be updated. Try again.</string>
     <string name="notifications_order_unavailable">Order unavailable or store archived.</string>

@@ -151,4 +151,9 @@ class RoomTinyStockStore(
         db.invalidationTracker
             .createFlow("sales_orders", "sales_order_items")
             .map { orders(storeID) }
+
+    override fun observeReminderChanges(): Flow<Unit> =
+        db.invalidationTracker
+            .createFlow("stores", "sales_orders", "sales_order_items")
+            .map { }
 }

@@ -72,6 +72,7 @@ import java.util.UUID
  * lista, mes com a contagem por dia, secoes por status e o detalhe do pedido por cima.
  *
  * [filterRequest] chega do toque numa fila dos Relatorios e e consumido com [onFilterRequestHandled].
+ * [openOrderRequest] chega do toque num lembrete e e consumido com [onOpenOrderHandled].
  */
 @Composable
 fun CalendarScreen(
@@ -81,6 +82,8 @@ fun CalendarScreen(
     storeName: String,
     onEditOrder: (SalesOrder) -> Unit,
     modifier: Modifier = Modifier,
+    openOrderRequest: UUID? = null,
+    onOpenOrderHandled: () -> Unit = {},
     viewModel: CalendarViewModel = viewModel(),
 ) {
     LaunchedEffect(storeID) { viewModel.setStore(storeID) }
@@ -110,6 +113,14 @@ fun CalendarScreen(
         selectedDay = LocalDate.now(zone).toEpochDay()
         openOrderID = null
         onFilterRequestHandled()
+    }
+
+    // Toque num lembrete: mostra todos os pedidos e abre o detalhe dele.
+    LaunchedEffect(openOrderRequest, storeID) {
+        val request = openOrderRequest ?: return@LaunchedEffect
+        filterKey = CalendarOrderFilter.All.key
+        openOrderID = request.toString()
+        onOpenOrderHandled()
     }
 
     // Atualiza a cada minuto, como o TimelineView do iOS (virada do dia e atrasados).

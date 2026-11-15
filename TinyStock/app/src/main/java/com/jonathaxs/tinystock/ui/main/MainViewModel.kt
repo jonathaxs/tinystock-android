@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.jonathaxs.tinystock.R
 import com.jonathaxs.tinystock.container
 import com.jonathaxs.tinystock.core.model.AppAccentColor
+import com.jonathaxs.tinystock.core.model.OrderReminderRoute
 import com.jonathaxs.tinystock.core.model.StoreProfile
 import com.jonathaxs.tinystock.core.service.StoreProfileService
 import com.jonathaxs.tinystock.core.service.StoreSession
@@ -18,6 +19,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -89,6 +92,51 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             } catch (error: Exception) {
                 bootstrapped.value = false
             }
+        }
+        // Toque num lembrete: espera a Inicio estar pronta e entao abre o pedido.
+        viewModelScope.launch {
+            launchState.filter { it == LaunchState.Main }.first()
+            container.reminders.route.filterNotNull().collect { route ->
+                container.reminders.consumeRoute()
+                openReminder(route)
+            }
+        }
+    }
+
+    /** Aviso de lembrete que nao abriu o pedido (texto), ou null. */
+    var reminderError by mutableStateOf<Int?>(null)
+        private set
+
+    fun dismissReminderError() {
+        reminderError = null
+    }
+
+    /** Pedido pedido por um lembrete; o Calendario abre e limpa. */
+    var reminderOrderRequest by mutableStateOf<UUID?>(null)
+        private set
+
+    fun consumeReminderOrderRequest() {
+        reminderOrderRequest = null
+    }
+
+    /** Confere loja e pedido, troca de loja e abre o pedido no Calendario. Porte do `MainView` do iOS. */
+    private suspend fun openReminder(route: OrderReminderRoute) {
+        val session = session ?: return
+        try {
+            val destination = route.resolve(store)
+            if (destination == null) {
+                reminderError = R.string.notifications_order_unavailable
+                return
+            }
+            session.select(destination.store)
+            selectedID.value = session.selectedStoreID
+            editingOrderID = null
+            reminderOrderRequest = destination.order.id
+            sheet = AppSheet.Calendar
+        } catch (cancellation: kotlinx.coroutines.CancellationException) {
+            throw cancellation
+        } catch (_: Exception) {
+            reminderError = R.string.notifications_order_error
         }
     }
 

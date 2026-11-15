@@ -49,7 +49,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.jonathaxs.tinystock.R
 import com.jonathaxs.tinystock.ui.components.AppCircleButton
-import com.jonathaxs.tinystock.ui.components.ComingSoonPage
 import com.jonathaxs.tinystock.ui.calendar.CalendarScreen
 import com.jonathaxs.tinystock.ui.home.HomeAddAction
 import com.jonathaxs.tinystock.ui.home.HomeScreen
@@ -68,6 +67,7 @@ import com.jonathaxs.tinystock.ui.settings.ColorSettingsScreen
 import com.jonathaxs.tinystock.ui.settings.AboutScreen
 import com.jonathaxs.tinystock.ui.settings.BackupSettingsScreen
 import com.jonathaxs.tinystock.ui.settings.CalendarExportSettingsScreen
+import com.jonathaxs.tinystock.ui.settings.NotificationSettingsScreen
 import com.jonathaxs.tinystock.ui.settings.PrivacyScreen
 import com.jonathaxs.tinystock.ui.settings.SettingsPage
 import com.jonathaxs.tinystock.ui.settings.SettingsScreen
@@ -274,11 +274,21 @@ private fun MainScreen(viewModel: MainViewModel) {
                     )
                     SettingsPage.About -> AboutScreen(back)
                     SettingsPage.Privacy -> PrivacyScreen(back)
-                    // Notificacoes chega na proxima etapa, com os lembretes.
-                    SettingsPage.Notifications -> ComingSoonPage(title = stringResource(page.titleRes), onBack = back)
+                    SettingsPage.Notifications -> NotificationSettingsScreen(onBack = back)
                 }
             }
         }
+    }
+
+    viewModel.reminderError?.let { message ->
+        AlertDialog(
+            onDismissRequest = viewModel::dismissReminderError,
+            title = { Text(stringResource(R.string.notifications_title)) },
+            text = { Text(stringResource(message)) },
+            confirmButton = {
+                TextButton(onClick = viewModel::dismissReminderError) { Text(stringResource(R.string.common_ok)) }
+            },
+        )
     }
 
     viewModel.sheet?.let { sheet ->
@@ -306,6 +316,8 @@ private fun MainScreen(viewModel: MainViewModel) {
                             onFilterRequestHandled = viewModel::consumeCalendarFilterRequest,
                             storeName = storeName,
                             onEditOrder = { viewModel.editOrder(it.id) },
+                            openOrderRequest = viewModel.reminderOrderRequest,
+                            onOpenOrderHandled = viewModel::consumeReminderOrderRequest,
                         )
                     }
                 }

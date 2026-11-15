@@ -363,12 +363,10 @@
     <string name="notifications_title">Notificações</string>
     <string name="notifications_enabled">Lembretes de pedidos</string>
     <string name="notifications_scope">Todas as lojas ativas neste dispositivo.</string>
-    <string name="notifications_permission">Permissão do iOS</string>
     <string name="notifications_permission_status">Estado</string>
     <string name="notifications_permission_request">Permitir notificações</string>
     <string name="notifications_permission_settings">Abrir ajustes de notificações</string>
     <string name="notifications_authorization_notDetermined">Não solicitada</string>
-    <string name="notifications_authorization_denied">Bloqueada no iOS</string>
     <string name="notifications_authorization_authorized">Permitida</string>
     <string name="notifications_authorization_provisional">Entrega silenciosa</string>
     <string name="notifications_authorization_unknown">Indisponível</string>
@@ -387,7 +385,6 @@
     <string name="notifications_capacity_footer">Os lembretes mais próximos têm prioridade. Abra o TinyStock regularmente para agendar os demais conforme houver espaço.</string>
     <string name="notifications_retry">Tentar novamente</string>
     <string name="notifications_error_preferences">Não foi possível carregar ou salvar as preferências de notificações. Configure suas preferências novamente.</string>
-    <string name="notifications_error_permission">O iOS não concluiu a solicitação de permissão. Tente novamente.</string>
     <string name="notifications_error_data">Não foi possível ler os pedidos. Os lembretes agendados anteriormente foram mantidos.</string>
     <string name="notifications_error_scheduling">Não foi possível atualizar alguns lembretes. Tente novamente.</string>
     <string name="notifications_order_unavailable">Pedido indisponível ou loja arquivada.</string>

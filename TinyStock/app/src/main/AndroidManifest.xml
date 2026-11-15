@@ -28,6 +28,16 @@
             </intent-filter>
         </activity>
 
+        <!-- Hora ou fuso mudou: refaz a fila de lembretes. -->
+        <receiver
+            android:name=".notifications.ReminderClockReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
         <!-- Entrega a camera um arquivo temporario para a foto do produto (sem permissao de camera). -->
         <provider
             android:name="androidx.core.content.FileProvider"
