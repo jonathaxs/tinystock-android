@@ -52,14 +52,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -142,9 +146,21 @@ fun HomeScreen(
     val hero = @Composable { modifier: Modifier -> HomeHero(data.products, data.variants, data.orders, modifier) }
     val pageButtons = @Composable { HomePageButtons(viewMode, viewModel::toggleViewMode, onReports, onCalendar, onSettings) }
     val addButton = @Composable { HomeAddButton(hasProducts = data.products.isNotEmpty(), onPick = onAdd) }
+    val editing = CatalogEditing(
+        isEditing = viewModel.isEditing,
+        // A ordem manual so vale para o catalogo completo, sem busca ativa (como no iOS).
+        canMove = search.isEmpty(),
+        onToggle = viewModel::toggleEditing,
+        onDelete = viewModel::requestDeletion,
+        onMove = viewModel::move,
+    )
     val catalog: LazyListScope.() -> Unit = {
-        catalogItems(data, filtered, search, { search = it }, mode, viewMode, viewModel::setCatalogMode, onProductAction, onEditVariant)
+        catalogItems(data, filtered, search, { search = it }, mode, viewMode, viewModel::setCatalogMode, onProductAction, onEditVariant, editing)
     }
+    LaunchedEffect(data.loaded && data.products.isEmpty()) {
+        if (data.loaded && data.products.isEmpty()) viewModel.stopEditing()
+    }
+    CatalogDialogs(viewModel)
 
     // Dobra (Pixel Fold e afins) e onde a Inicio esta na janela, para levar a faixa para coordenadas locais.
     val foldInfo = rememberFoldInfo()
@@ -216,6 +232,7 @@ private fun LazyListScope.catalogItems(
     onModeChange: (CatalogMode) -> Unit,
     onProductAction: (ProductAction, Product) -> Unit,
     onEditVariant: (ProductVariant) -> Unit,
+    editing: CatalogEditing,
 ) {
     if (!data.loaded) return
     if (data.products.isEmpty()) {
@@ -223,7 +240,11 @@ private fun LazyListScope.catalogItems(
         return
     }
     item("search") { SearchField(search, onChange = onSearch) }
-    item("mode") { CatalogHeader(mode, onModeChange = onModeChange) }
+    item("mode") {
+        // Editar (apagar e reordenar) so existe nos produtos em lista.
+        val showsEdit = mode == CatalogMode.Products && viewMode == CatalogViewMode.List
+        CatalogHeader(mode, onModeChange = onModeChange, editing = editing.takeIf { showsEdit })
+    }
     if (filtered.isEmpty()) {
         item("noResults") { NoResults(search) }
     } else if (viewMode == CatalogViewMode.Grid && mode == CatalogMode.Products) {
@@ -241,8 +262,26 @@ private fun LazyListScope.catalogItems(
     } else if (mode == CatalogMode.Products) {
         item("products") {
             AppGroupedCard(
-                rows = filtered.map { product -> { ProductRow(product, data.variants, onProductAction) } },
-                dividerInset = 80.dp,
+                rows = filtered.mapIndexed { index, product ->
+                    {
+                        if (editing.isEditing) {
+                            EditableProductRow(
+                                product = product,
+                                variants = data.variants,
+                                canMoveUp = editing.canMove && index > 0,
+                                canMoveDown = editing.canMove && index < filtered.lastIndex,
+                                showsMove = editing.canMove,
+                                onEdit = { onProductAction(ProductAction.Edit, product) },
+                                onDelete = { editing.onDelete(product) },
+                                onMove = { offset -> editing.onMove(product, offset) },
+                            )
+                        } else {
+                            ProductRow(product, data.variants, onProductAction)
+                        }
+                    }
+                },
+                // Em Editar o texto anda para a direita por causa do botao de apagar.
+                dividerInset = if (editing.isEditing) 132.dp else 80.dp,
             )
         }
     } else {
@@ -509,11 +548,20 @@ private fun SearchField(text: String, onChange: (String) -> Unit) {
     }
 }
 
-/** Acima do catalogo: troca entre produtos e variacoes. */
+/** Acima do catalogo: troca entre produtos e variacoes e, nos produtos em lista, o Editar. */
 @Composable
-private fun CatalogHeader(mode: CatalogMode, onModeChange: (CatalogMode) -> Unit) {
+private fun CatalogHeader(mode: CatalogMode, onModeChange: (CatalogMode) -> Unit, editing: CatalogEditing?) {
     var expanded by remember { mutableStateOf(false) }
     Box(Modifier.fillMaxWidth()) {
+        editing?.let {
+            TextButton(onClick = it.onToggle, modifier = Modifier.align(Alignment.CenterEnd)) {
+                Text(
+                    stringResource(if (it.isEditing) R.string.common_done else R.string.common_edit),
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 17.sp,
+                )
+            }
+        }
         Row(
             modifier = Modifier
                 .clickable(role = Role.Button, onClickLabel = stringResource(R.string.products_mode)) { expanded = true }
@@ -632,6 +680,108 @@ private fun VariantRow(variant: ProductVariant, onSelect: (ProductVariant) -> Un
             NumberFormat.getIntegerInstance().format(variant.quantity),
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.SemiBold,
+        )
+    }
+}
+
+// endregion
+
+// region Editar do catalogo
+
+/** Estado e acoes do modo de edicao, levados ate as linhas do catalogo. */
+private class CatalogEditing(
+    val isEditing: Boolean,
+    val canMove: Boolean,
+    val onToggle: () -> Unit,
+    val onDelete: (Product) -> Unit,
+    val onMove: (Product, Int) -> Unit,
+)
+
+/**
+ * Linha no modo Editar: apagar a esquerda, toque abre o editor e setas para reordenar. No Android as setas
+ * fazem o papel do arrastar do iOS.
+ */
+@Composable
+private fun EditableProductRow(
+    product: Product,
+    variants: List<ProductVariant>,
+    canMoveUp: Boolean,
+    canMoveDown: Boolean,
+    showsMove: Boolean,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onMove: (Int) -> Unit,
+) {
+    val quantity = NumberFormat.getNumberInstance().format(ProductVariantService.displayedQuantity(product, variants))
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(start = 2.dp, end = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(onClick = onDelete) {
+            Icon(
+                Icons.Filled.Delete,
+                contentDescription = stringResource(R.string.common_delete) + ", " + product.name,
+                tint = MaterialTheme.colorScheme.error,
+            )
+        }
+        Row(
+            Modifier
+                .weight(1f)
+                .clickable(role = Role.Button, onClickLabel = stringResource(R.string.products_edit_hint), onClick = onEdit)
+                .padding(vertical = 10.dp)
+                .semantics(mergeDescendants = true) { },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            ProductImage(product.imageFileName)
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(product.name, fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+                Text(
+                    stringResource(R.string.products_catalog_quantity, quantity),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        if (showsMove) {
+            IconButton(onClick = { onMove(-1) }, enabled = canMoveUp) {
+                Icon(Icons.Filled.KeyboardArrowUp, contentDescription = stringResource(R.string.stores_move_up) + ", " + product.name)
+            }
+            IconButton(onClick = { onMove(1) }, enabled = canMoveDown) {
+                Icon(Icons.Filled.KeyboardArrowDown, contentDescription = stringResource(R.string.stores_move_down) + ", " + product.name)
+            }
+        }
+    }
+}
+
+/** Confirmacao antes de apagar e aviso de erro. Mesmos textos do iOS. */
+@Composable
+private fun CatalogDialogs(viewModel: HomeViewModel) {
+    viewModel.pendingDeletion?.let { product ->
+        AlertDialog(
+            onDismissRequest = viewModel::cancelDeletion,
+            title = { Text(stringResource(R.string.product_delete_confirm_title)) },
+            text = { Text(product.name + "\n\n" + stringResource(R.string.products_delete_stock_message)) },
+            confirmButton = {
+                TextButton(onClick = viewModel::confirmDeletion) {
+                    Text(stringResource(R.string.common_delete), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::cancelDeletion) { Text(stringResource(R.string.common_cancel)) }
+            },
+        )
+    }
+    viewModel.error?.let { error ->
+        AlertDialog(
+            onDismissRequest = viewModel::dismissError,
+            title = { Text(stringResource(R.string.products_error_title)) },
+            text = { Text(error.message?.let { stringResource(it) } ?: error.fallback.orEmpty()) },
+            confirmButton = {
+                TextButton(onClick = viewModel::dismissError) { Text(stringResource(R.string.common_ok)) }
+            },
         )
     }
 }
