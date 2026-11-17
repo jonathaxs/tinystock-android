@@ -54,7 +54,7 @@ import com.jonathaxs.tinystock.ui.icons.AppIcons
 import com.jonathaxs.tinystock.ui.products.SwitchRow
 import com.jonathaxs.tinystock.ui.theme.color
 
-private const val FEEDBACK_EMAIL = "jonathasmrt@me.com"
+private const val FEEDBACK_EMAIL = "contato@jonathasmotta.com"
 private const val WEBSITE_URL = "https://jonathasmotta.com"
 
 // region Pecas comuns das paginas dos Ajustes
