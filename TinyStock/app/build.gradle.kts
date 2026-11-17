@@ -1,6 +1,16 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+}
+
+// Assinatura do APK de distribuicao, lida do keystore.properties (fora do git). Quem clona o repo nao tem
+// esse arquivo, e o build release so fica sem assinatura.
+val keystorePropsFile = rootProject.file("keystore.properties")
+val keystoreProps = Properties().apply {
+    if (keystorePropsFile.exists()) FileInputStream(keystorePropsFile).use { load(it) }
 }
 
 android {
@@ -19,10 +29,21 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            if (keystorePropsFile.exists()) {
+                storeFile = file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // Minify fica desligado: Room e serialization dependem de reflection. A assinatura entra com a
-            // keystore propria, fora do repo, quando for gerar o APK de distribuicao.
+            if (keystorePropsFile.exists()) signingConfig = signingConfigs.getByName("release")
+            // Minify fica desligado: Room e serialization dependem de reflection.
             optimization {
                 enable = false
             }
