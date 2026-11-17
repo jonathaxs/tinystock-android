@@ -272,7 +272,7 @@ private fun MainScreen(viewModel: MainViewModel) {
                         onRestored = viewModel::onBackupRestored,
                         onBack = back,
                     )
-                    SettingsPage.About -> AboutScreen(back)
+                    SettingsPage.About -> AboutScreen(onReopenWelcome = viewModel::reopenWelcome, onBack = back)
                     SettingsPage.Privacy -> PrivacyScreen(back)
                     SettingsPage.Notifications -> NotificationSettingsScreen(onBack = back)
                 }

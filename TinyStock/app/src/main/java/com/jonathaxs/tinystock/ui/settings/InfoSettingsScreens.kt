@@ -4,6 +4,22 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.SystemClock
+import android.provider.Settings
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import com.jonathaxs.tinystock.ui.components.AppSecondaryButton
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -55,7 +71,8 @@ import com.jonathaxs.tinystock.ui.products.SwitchRow
 import com.jonathaxs.tinystock.ui.theme.color
 
 private const val FEEDBACK_EMAIL = "contato@jonathasmotta.com"
-private const val WEBSITE_URL = "https://jonathasmotta.com"
+private const val ICON_TAP_GOAL = 5
+private const val ICON_TAP_WINDOW_MS = 2_000L
 
 // region Pecas comuns das paginas dos Ajustes
 
@@ -169,12 +186,43 @@ fun CalendarExportSettingsScreen(isEnabled: Boolean, onChange: (Boolean) -> Unit
     }
 }
 
-/** Icone, versao, descricao e contato. Porte do `AboutView` do iOS. */
+/** Icone, versao, descricao e o botao de feedback. Porte do `AboutView` do iOS. */
 @Composable
-fun AboutScreen(onBack: () -> Unit) {
+fun AboutScreen(onReopenWelcome: () -> Unit, onBack: () -> Unit) {
     val context = LocalContext.current
-    val dark = isSystemInDarkTheme()
+    val haptics = LocalHapticFeedback.current
+    // Animacoes desligadas nas opcoes do sistema equivalem ao Reduzir movimento do iOS.
+    val reduceMotion = remember {
+        Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
+    }
     val version = remember { appVersion(context) }
+    val scope = rememberCoroutineScope()
+    val iconScale = remember { Animatable(1f) }
+    var tapCount by remember { mutableIntStateOf(0) }
+    var lastTap by remember { mutableLongStateOf(0L) }
+
+    // 5 toques seguidos no icone (no maximo 2 s entre eles) voltam para as boas-vindas.
+    fun registerIconTap() {
+        if (!reduceMotion) {
+            scope.launch {
+                iconScale.animateTo(1.18f, spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessHigh))
+                iconScale.animateTo(1f, spring(dampingRatio = 0.55f, stiffness = Spring.StiffnessMediumLow))
+            }
+        }
+        val now = SystemClock.elapsedRealtime()
+        if (now - lastTap > ICON_TAP_WINDOW_MS) tapCount = 0
+        lastTap = now
+        tapCount += 1
+        if (tapCount >= ICON_TAP_GOAL) {
+            tapCount = 0
+            lastTap = 0L
+            haptics.performHapticFeedback(HapticFeedbackType.Confirm)
+            onReopenWelcome()
+        } else {
+            haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+        }
+    }
+
     SettingsScrollPage(stringResource(R.string.settings_about_title), onBack) {
         Column(
             Modifier
@@ -188,7 +236,10 @@ fun AboutScreen(onBack: () -> Unit) {
                 contentDescription = null,
                 modifier = Modifier
                     .size(80.dp)
-                    .clip(RoundedCornerShape(18.dp)),
+                    .scale(iconScale.value)
+                    .clip(RoundedCornerShape(18.dp))
+                    .clickable(interactionSource = null, indication = null, onClick = ::registerIconTap)
+                    .clearAndSetSemantics { },
             )
             Text(stringResource(R.string.app_name), fontSize = 22.sp, fontWeight = FontWeight.Bold)
             Text(
@@ -201,30 +252,18 @@ fun AboutScreen(onBack: () -> Unit) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 14.dp, start = 8.dp, end = 8.dp),
             )
+            AppSecondaryButton(
+                onClick = { open(context, Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$FEEDBACK_EMAIL"))) },
+                modifier = Modifier.padding(top = 14.dp),
+            ) {
+                Icon(Icons.Filled.Email, contentDescription = null, modifier = Modifier.size(20.dp))
+                Text(
+                    stringResource(R.string.settings_about_feedback),
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
         }
-        SettingsCardSection(
-            title = stringResource(R.string.settings_about_developer),
-            rows = listOf(
-                {
-                    SettingsActionRow(
-                        icon = Icons.Filled.Email,
-                        iconColor = AppAccentColor.Blue.color(dark),
-                        title = stringResource(R.string.settings_about_feedback),
-                        trailing = AppIcons.OpenExternal,
-                        onClick = { open(context, Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$FEEDBACK_EMAIL"))) },
-                    )
-                },
-                {
-                    SettingsActionRow(
-                        icon = AppIcons.Globe,
-                        iconColor = AppAccentColor.Blue.color(dark),
-                        title = stringResource(R.string.settings_about_website),
-                        trailing = AppIcons.OpenExternal,
-                        onClick = { open(context, Intent(Intent.ACTION_VIEW, Uri.parse(WEBSITE_URL))) },
-                    )
-                },
-            ),
-        )
     }
 }
 

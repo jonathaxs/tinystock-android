@@ -193,6 +193,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { preferences.setCalendarExportEnabled(value) }
     }
 
+    /** Cinco toques no icone do Sobre: volta para as boas-vindas. */
+    fun reopenWelcome() {
+        viewModelScope.launch { preferences.setDidCompleteWelcome(false) }
+    }
+
     fun completeWelcome() {
         viewModelScope.launch { preferences.setDidCompleteWelcome(true) }
     }
