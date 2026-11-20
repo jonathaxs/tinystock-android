@@ -17,6 +17,8 @@
     <string name="common_edit">Editar</string>
     <string name="common_delete">Excluir</string>
     <string name="common_ok">OK</string>
+    <string name="keyboard_previous">Campo anterior</string>
+    <string name="keyboard_next">Próximo campo</string>
     <string name="common_close">Fechar</string>
     <string name="common_decrease">Diminuir</string>
     <string name="common_increase">Aumentar</string>
@@ -27,7 +29,7 @@
     <string name="products_empty_message">Cadastre seu primeiro produto pra começar a controlar o estoque.</string>
 
     <!-- Formulário do produto -->
-    <string name="product_form_title_new">Novo produto</string>
+    <string name="product_form_title_new">Adicionar produto</string>
     <string name="product_form_section_prices">Preços</string>
     <string name="product_form_name">Nome ou categoria</string>
     <string name="product_form_costPrice">Custo</string>
@@ -168,7 +170,7 @@
     <string name="store_error_storeNotInTrash">Mova esta loja para a Lixeira antes de excluí-la permanentemente.</string>
     <string name="store_error_title">Não foi possível salvar a loja</string>
     <string name="store_switcher_accessibility">Escolher loja</string>
-    <string name="store_form_title_new">Nova loja</string>
+    <string name="store_form_title_new">Adicionar loja</string>
     <string name="store_form_title_edit">Editar loja</string>
     <string name="store_form_section_identification">Identificação</string>
     <string name="store_form_name">Nome da loja</string>
@@ -211,7 +213,7 @@
     <string name="product_form_variant_name">Variação ou cor</string>
     <string name="product_form_variant_initialStock">Estoque inicial</string>
     <string name="product_form_variant_available">Estoque atual</string>
-    <string name="product_form_variant_disabled_footer">Ative para identificar uma variação e seu estoque inicial.</string>
+    <string name="product_form_variant_disabled_footer">Sem variações, o estoque fica no próprio produto.</string>
     <string name="product_form_variant_multiple_footer">Variações existentes devem permanecer ativas para preservar seus estoques e históricos.</string>
     <string name="product_form_photo_camera">Tirar foto</string>
     <string name="product_form_photo_error">Não foi possível ler esta foto. Escolha outra imagem.</string>
@@ -223,8 +225,8 @@
     <string name="products_delete_stock_message">O produto, suas variações e movimentações de estoque serão excluídos. As vendas registradas serão mantidas. Esta ação não pode ser desfeita.</string>
     <string name="products_error_title">Não foi possível excluir o produto</string>
     <string name="stock_entry_navigationTitle">Entrada</string>
-    <string name="stock_entry_newVariant">Nova variação</string>
-    <string name="stock_entry_new">Novo estoque</string>
+    <string name="stock_entry_newVariant">Adicionar variação</string>
+    <string name="stock_entry_new">Adicionar estoque</string>
     <string name="product_variant_edit_title">Editar variação</string>
     <string name="product_variant_edit_name">Nome</string>
     <string name="product_variant_edit_stock">Estoque</string>

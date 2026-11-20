@@ -1,7 +1,9 @@
 package com.jonathaxs.tinystock.ui.products
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -26,6 +28,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.selection.toggleable
@@ -59,11 +62,10 @@ private class ProductFormState(product: Product?) {
     var costText by mutableStateOf(CurrencyFormatter.editableText(product?.costPrice ?: BigDecimal.ZERO))
     var saleText by mutableStateOf(CurrencyFormatter.editableText(product?.salePrice ?: BigDecimal.ZERO))
 
-    // Produto novo sempre nasce com uma variacao nomeada, o que libera o estoque inicial.
+    // Produto novo comeca com variacao ligada; o switch deixa cadastrar sem variacao.
     var hasVariations by mutableStateOf(product == null)
     var variationName by mutableStateOf("")
     var quantity by mutableIntStateOf(if (product == null) 1 else 0)
-    var usesLegacyDefault by mutableStateOf(false)
     var variants by mutableStateOf<List<ProductVariantInput>>(emptyList())
     var loaded by mutableStateOf(product == null)
 }
@@ -100,7 +102,6 @@ fun ProductFormScreen(
             ProductVariantInput(id = it.id, existingID = it.id, name = if (it.isDefault) "" else it.name, initialQuantity = it.quantity)
         }
         state.hasVariations = stored.isNotEmpty() && stored.none { it.isDefault }
-        state.usesLegacyDefault = stored.any { it.isDefault }
         state.variants.singleOrNull()?.let {
             state.variationName = it.name
             state.quantity = it.initialQuantity
@@ -118,21 +119,20 @@ fun ProductFormScreen(
     }
 
     val directFields = editing == null || state.variants.size <= 1
+    // Sem variacao, a unica entrada leva so o estoque da variacao interna do produto.
     val formVariants: List<ProductVariantInput> = when {
-        !state.hasVariations -> emptyList()
-        editing != null && state.variants.size > 1 -> state.variants
+        state.hasVariations && editing != null && state.variants.size > 1 -> state.variants
         else -> listOf(
             ProductVariantInput(
                 existingID = if (editing == null) null else state.variants.firstOrNull()?.existingID,
-                name = state.variationName,
+                name = if (state.hasVariations) state.variationName else "",
                 initialQuantity = state.quantity,
             ),
         )
     }
     val variationValid = when {
-        !state.hasVariations -> true
         !directFields -> state.variants.isNotEmpty()
-        else -> state.variationName.isNotBlank() && state.quantity >= 0
+        else -> state.quantity >= 0 && (!state.hasVariations || state.variationName.isNotBlank())
     }
     val cost = price(state.costText)
     val sale = price(state.saleText)
@@ -198,41 +198,36 @@ fun ProductFormScreen(
                 )
             }
         }
-        // So produtos antigos, criados sem variacao, ainda precisam ativar a opcao.
-        if (state.usesLegacyDefault) {
-            item("legacy") {
+        // Com uma variacao so, o produto pode ficar sem variacao e o estoque fica nele mesmo.
+        if (directFields) {
+            item("variation") {
                 FormSection(
-                    title = null,
+                    stringResource(R.string.product_form_variant_title),
                     footer = if (!state.hasVariations) stringResource(R.string.product_form_variant_disabled_footer) else null,
                 ) {
                     SwitchRow(
                         label = stringResource(R.string.product_form_variant_enabled),
                         checked = state.hasVariations,
-                        enabled = directFields,
+                        enabled = true,
                         onCheckedChange = { state.hasVariations = it },
                     )
+                    AnimatedVisibility(visible = state.hasVariations) {
+                        Column {
+                            FormDivider()
+                            FormTextField(
+                                value = state.variationName,
+                                onValueChange = { state.variationName = it },
+                                placeholder = stringResource(R.string.product_form_variant_name),
+                                keyboardOptions = KeyboardOptions(capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Words),
+                            )
+                        }
+                    }
                 }
             }
-        }
-        if (directFields) {
-            item("variation") {
-                FormSection(stringResource(R.string.product_form_variant_title)) {
-                    FormTextField(
-                        value = state.variationName,
-                        onValueChange = { state.variationName = it },
-                        placeholder = stringResource(R.string.product_form_variant_name),
-                        enabled = state.hasVariations,
-                        keyboardOptions = KeyboardOptions(capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Words),
-                    )
-                }
-            }
+            // Na edicao, o saldo escolhido vira ajuste registrado no historico.
             item("stock") {
                 FormSection(stockTitle) {
-                    if (state.hasVariations) {
-                        StockQuantityStepper(stockTitle, state.quantity, onQuantityChange = { state.quantity = it })
-                    } else {
-                        FormValueRow(stockTitle, NumberFormat.getIntegerInstance().format(state.quantity))
-                    }
+                    StockQuantityStepper(stockTitle, state.quantity, onQuantityChange = { state.quantity = it })
                 }
             }
         } else {
@@ -264,7 +259,7 @@ fun ProductFormScreen(
                 footer = profit?.let { stringResource(R.string.product_form_unitProfitSummary, CurrencyFormatter.string(it)) },
                 footerColor = if (profit != null && profit < BigDecimal.ZERO) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
             ) {
-                PriceTextField(state.costText, { state.costText = it }, stringResource(R.string.product_form_costPrice), costFocus)
+                PriceTextField(state.costText, { state.costText = it }, stringResource(R.string.product_form_costPrice), costFocus, ImeAction.Done)
             }
         }
     }
@@ -273,13 +268,19 @@ fun ProductFormScreen(
 }
 
 @Composable
-private fun PriceTextField(value: String, onChange: (String) -> Unit, label: String, focus: FocusRequester) {
+private fun PriceTextField(
+    value: String,
+    onChange: (String) -> Unit,
+    label: String,
+    focus: FocusRequester,
+    imeAction: ImeAction = ImeAction.Next,
+) {
     FormTextField(
         value = value,
         onValueChange = onChange,
         placeholder = CurrencyFormatter.string(BigDecimal.ZERO),
         label = label,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = imeAction),
         modifier = Modifier.focusRequester(focus),
     )
 }

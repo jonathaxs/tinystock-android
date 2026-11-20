@@ -86,7 +86,13 @@ object ProductFormService {
         if (usesVariants) {
             ProductVariantService.applyEdits(variants, existing = existing, product = savedProduct, store = store)
         } else {
-            ProductVariantService.applyDefault(existing = existing, product = savedProduct, store = store)
+            // Sem variacao, o estoque inicial do produto novo vai para a variacao interna.
+            ProductVariantService.applyDefault(
+                existing = existing,
+                product = savedProduct,
+                store = store,
+                initialQuantity = variants.firstOrNull()?.initialQuantity ?: 0,
+            )
         }
         savedProduct
     }

@@ -17,6 +17,8 @@
     <string name="common_edit">Edit</string>
     <string name="common_delete">Delete</string>
     <string name="common_ok">OK</string>
+    <string name="keyboard_previous">Previous field</string>
+    <string name="keyboard_next">Next field</string>
     <string name="common_close">Close</string>
     <string name="common_decrease">Decrease</string>
     <string name="common_increase">Increase</string>
@@ -27,7 +29,7 @@
     <string name="products_empty_message">Add your first product to start tracking your stock.</string>
 
     <!-- Product form -->
-    <string name="product_form_title_new">New Product</string>
+    <string name="product_form_title_new">Add Product</string>
     <string name="product_form_section_prices">Prices</string>
     <string name="product_form_name">Name or category</string>
     <string name="product_form_costPrice">Cost</string>
@@ -168,7 +170,7 @@
     <string name="store_error_storeNotInTrash">Move this store to Trash before deleting it permanently.</string>
     <string name="store_error_title">Store could not be saved</string>
     <string name="store_switcher_accessibility">Choose store</string>
-    <string name="store_form_title_new">New Store</string>
+    <string name="store_form_title_new">Add Store</string>
     <string name="store_form_title_edit">Edit Store</string>
     <string name="store_form_section_identification">Identification</string>
     <string name="store_form_name">Store name</string>
@@ -211,7 +213,7 @@
     <string name="product_form_variant_name">Variation or color</string>
     <string name="product_form_variant_initialStock">Initial stock</string>
     <string name="product_form_variant_available">Current stock</string>
-    <string name="product_form_variant_disabled_footer">Turn this on to identify a variation and its initial stock.</string>
+    <string name="product_form_variant_disabled_footer">Without variations, the stock stays on the product itself.</string>
     <string name="product_form_variant_multiple_footer">Multiple existing variations must remain enabled to preserve their stock and history.</string>
     <string name="product_form_photo_camera">Take photo</string>
     <string name="product_form_photo_error">Unable to read this photo. Please choose another image.</string>
@@ -223,8 +225,8 @@
     <string name="products_delete_stock_message">The product, its variations and stock movements will be deleted. Recorded sales will be kept. This cannot be undone.</string>
     <string name="products_error_title">Unable to delete product</string>
     <string name="stock_entry_navigationTitle">Entry</string>
-    <string name="stock_entry_newVariant">New variation</string>
-    <string name="stock_entry_new">New stock</string>
+    <string name="stock_entry_newVariant">Add variation</string>
+    <string name="stock_entry_new">Add stock</string>
     <string name="product_variant_edit_title">Edit variation</string>
     <string name="product_variant_edit_name">Name</string>
     <string name="product_variant_edit_stock">Stock</string>

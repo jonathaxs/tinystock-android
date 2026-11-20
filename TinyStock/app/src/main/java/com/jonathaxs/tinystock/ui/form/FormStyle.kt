@@ -52,6 +52,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -221,7 +222,12 @@ fun FormTextField(
             enabled = enabled,
             singleLine = singleLine,
             maxLines = if (singleLine) 1 else 5,
-            keyboardOptions = keyboardOptions,
+            // Campo de uma linha leva ao proximo com a tecla do teclado, como as setas do iOS.
+            keyboardOptions = if (singleLine && keyboardOptions.imeAction == ImeAction.Default) {
+                keyboardOptions.copy(imeAction = ImeAction.Next)
+            } else {
+                keyboardOptions
+            },
             textStyle = textStyle.copy(color = color, textAlign = textAlign),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             modifier = Modifier

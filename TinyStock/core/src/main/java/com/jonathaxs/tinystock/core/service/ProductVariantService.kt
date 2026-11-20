@@ -153,6 +153,7 @@ object ProductVariantService {
         existing: List<ProductVariant>,
         product: Product,
         store: TinyStockStore,
+        initialQuantity: Int = 0,
     ) {
         store.inTransaction {
             ensure(existing.size <= 1) { ProductFormError.CannotDisableMultipleVariations }
@@ -171,7 +172,7 @@ object ProductVariantService {
                     )
                 }
             } else {
-                create(product = product, name = "", isDefault = true, store = store)
+                create(product = product, name = "", isDefault = true, initialQuantity = initialQuantity, store = store)
             }
         }
     }

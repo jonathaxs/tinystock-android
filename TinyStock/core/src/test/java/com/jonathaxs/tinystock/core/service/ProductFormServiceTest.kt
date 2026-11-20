@@ -66,6 +66,26 @@ class ProductFormServiceTest {
     }
 
     @Test
+    fun cadastroSemVariacoesGuardaEstoqueInicial() = withStore { store ->
+        val storeID = UUID.randomUUID()
+        val product = ProductFormService.apply(
+            storeID = storeID,
+            name = "Suporte",
+            costPrice = BigDecimal("4"),
+            salePrice = BigDecimal("25"),
+            imageFileName = null,
+            variants = listOf(ProductVariantInput(initialQuantity = 10)),
+            usesVariants = false,
+            store = store,
+        )
+        val variant = ProductVariantService.variants(product, store).first()
+
+        assertTrue(variant.isDefault)
+        assertEquals(10, variant.quantity)
+        assertEquals(1, store.movements(storeID).size)
+    }
+
+    @Test
     fun cadastroComVariacoesExigePeloMenosUmaVariacao() = withStore { store ->
         val storeID = UUID.randomUUID()
 
