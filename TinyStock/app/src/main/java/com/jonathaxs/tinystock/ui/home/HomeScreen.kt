@@ -1,60 +1,51 @@
 package com.jonathaxs.tinystock.ui.home
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateBounds
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.LookaheadScope
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
-import com.jonathaxs.tinystock.ui.util.FoldInfo
-import com.jonathaxs.tinystock.ui.util.rememberFoldInfo
-import com.jonathaxs.tinystock.ui.util.rememberIsTablet
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -67,14 +58,21 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.LookaheadScope
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -82,6 +80,9 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -99,6 +100,9 @@ import com.jonathaxs.tinystock.ui.components.AppStyle
 import com.jonathaxs.tinystock.ui.components.ProductImage
 import com.jonathaxs.tinystock.ui.components.appCard
 import com.jonathaxs.tinystock.ui.icons.AppIcons
+import com.jonathaxs.tinystock.ui.util.FoldInfo
+import com.jonathaxs.tinystock.ui.util.rememberFoldInfo
+import com.jonathaxs.tinystock.ui.util.rememberIsTablet
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -247,9 +251,22 @@ private fun LazyListScope.catalogItems(
     }
     if (filtered.isEmpty()) {
         item("noResults") { NoResults(search) }
-    } else if (viewMode == CatalogViewMode.Grid && mode == CatalogMode.Products) {
-        item("productsGrid") {
-            ProductCatalogGrid(filtered, data.variants, onProductAction)
+    } else if (mode == CatalogMode.Products) {
+        // Lista e grade dos produtos trocam com esmaecer e leve zoom (some com animacoes desligadas).
+        item("products") {
+            AnimatedContent(
+                targetState = viewMode,
+                transitionSpec = {
+                    (fadeIn(tween(250)) + scaleIn(tween(250), initialScale = 0.96f)) togetherWith fadeOut(tween(150))
+                },
+                label = "catalogViewMode",
+            ) { shownMode ->
+                if (shownMode == CatalogViewMode.Grid) {
+                    ProductCatalogGrid(filtered, data.variants, onProductAction)
+                } else {
+                    ProductList(data, filtered, onProductAction, editing)
+                }
+            }
         }
     } else if (viewMode == CatalogViewMode.Grid) {
         items(filtered, key = { it.id }) { product ->
@@ -259,36 +276,45 @@ private fun LazyListScope.catalogItems(
                 Spacer(Modifier.size(4.dp))
             }
         }
-    } else if (mode == CatalogMode.Products) {
-        item("products") {
-            AppGroupedCard(
-                rows = filtered.mapIndexed { index, product ->
-                    {
-                        if (editing.isEditing) {
-                            EditableProductRow(
-                                product = product,
-                                variants = data.variants,
-                                canMoveUp = editing.canMove && index > 0,
-                                canMoveDown = editing.canMove && index < filtered.lastIndex,
-                                showsMove = editing.canMove,
-                                onEdit = { onProductAction(ProductAction.Edit, product) },
-                                onDelete = { editing.onDelete(product) },
-                                onMove = { offset -> editing.onMove(product, offset) },
-                            )
-                        } else {
-                            ProductRow(product, data.variants, onProductAction)
-                        }
-                    }
-                },
-                // Em Editar o texto anda para a direita por causa do botao de apagar.
-                dividerInset = if (editing.isEditing) 132.dp else 80.dp,
-            )
-        }
+
     } else {
         items(filtered, key = { it.id }) { product ->
             VariantSection(product, data.variants.filter { it.belongsTo(product) }.sortedBy { it.name }, onEditVariant)
         }
     }
+}
+
+
+/** Produtos em lista; em Editar as linhas ganham apagar e mover. */
+@Composable
+private fun ProductList(
+    data: HomeData,
+    filtered: List<Product>,
+    onProductAction: (ProductAction, Product) -> Unit,
+    editing: CatalogEditing,
+) {
+    AppGroupedCard(
+        rows = filtered.mapIndexed { index, product ->
+            {
+                if (editing.isEditing) {
+                    EditableProductRow(
+                        product = product,
+                        variants = data.variants,
+                        canMoveUp = editing.canMove && index > 0,
+                        canMoveDown = editing.canMove && index < filtered.lastIndex,
+                        showsMove = editing.canMove,
+                        onEdit = { onProductAction(ProductAction.Edit, product) },
+                        onDelete = { editing.onDelete(product) },
+                        onMove = { offset -> editing.onMove(product, offset) },
+                    )
+                } else {
+                    ProductRow(product, data.variants, onProductAction)
+                }
+            }
+        },
+        // Em Editar o texto anda para a direita por causa do botao de apagar.
+        dividerInset = if (editing.isEditing) 132.dp else 80.dp,
+    )
 }
 
 // region Layout largo
