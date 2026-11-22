@@ -38,9 +38,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -90,12 +89,14 @@ import com.jonathaxs.tinystock.ui.components.AppStyle
 import com.jonathaxs.tinystock.ui.components.IconBadge
 import com.jonathaxs.tinystock.ui.components.appCard
 import com.jonathaxs.tinystock.ui.icons.AppIcons
+import com.jonathaxs.tinystock.ui.products.ProductFormScreen
+import com.jonathaxs.tinystock.ui.products.ProductFormsViewModel
 import com.jonathaxs.tinystock.ui.util.rememberIsTablet
 import java.util.UUID
 
 /**
- * Apresentacao da primeira abertura: Inicio > O que da para fazer > Sua loja > Tudo pronto. Porte do
- * `WelcomeView` do iOS (C3.2). Restaurar backup abre direto o seletor de arquivos (sem iCloud).
+ * Apresentacao da primeira abertura: Inicio > Sua loja > Primeiro produto > Variacoes > Tudo pronto, com o
+ * formulario real do produto aberto pela dica de variacoes. Porte do `WelcomeView` do iOS (C3.2). Restaurar backup abre direto o seletor de arquivos (sem iCloud).
  * Na janela larga (tablet, dobravel aberto) o titulo da etapa e os botoes vao para um painel a esquerda (C9b).
  */
 @Composable
@@ -109,6 +110,9 @@ fun WelcomeScreen(
         uri?.let(viewModel::readBackup)
     }
     BackHandler(enabled = viewModel.step != WelcomeStep.Start) { viewModel.goBack() }
+    val formAttempt = viewModel.productFormAttempt
+    // Registrado depois: com o formulario aberto, voltar fecha so ele.
+    BackHandler(enabled = formAttempt != null) { viewModel.productFormClosed() }
     val isTablet = rememberIsTablet()
     // Arquivos .json nem sempre vem marcados como JSON no Android.
     val onRestore = { picker.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) }
@@ -131,6 +135,7 @@ fun WelcomeScreen(
                     onContinue = { viewModel.advance(onComplete) },
                     onBack = viewModel::goBack,
                     onRestore = onRestore,
+                    onSkip = viewModel::skipProductTour,
                     modifier = Modifier.width(panelWidth),
                 )
                 VerticalDivider()
@@ -144,7 +149,7 @@ fun WelcomeScreen(
                         .windowInsetsPadding(WindowInsets.safeDrawing)
                         .imePadding(),
                 ) {
-                    WelcomeProgressBar(viewModel.step)
+                    WelcomeProgressBar(viewModel.steps, viewModel.step)
                     AnimatedContent(
                         targetState = viewModel.step,
                         transitionSpec = {
@@ -161,13 +166,14 @@ fun WelcomeScreen(
                                 onRestore = onRestore,
                                 showsButtons = !isWide,
                             )
-                            WelcomeStep.About -> WelcomeAboutStep(showsHeader = !isWide)
                             WelcomeStep.Store -> WelcomeStoreStep(
                                 name = viewModel.storeName,
                                 onNameChange = { viewModel.storeName = it },
                                 onSubmit = { viewModel.advance(onComplete) },
                                 showsHeader = !isWide,
                             )
+                            WelcomeStep.Product -> WelcomeProductStep(showsHeader = !isWide)
+                            WelcomeStep.Variants -> WelcomeVariantsStep(showsHeader = !isWide)
                             WelcomeStep.Ready -> WelcomeReadyStep(showsHeader = !isWide)
                         }
                     }
@@ -175,11 +181,29 @@ fun WelcomeScreen(
                     if (viewModel.step != WelcomeStep.Start && !isWide) {
                         FooterButtons(
                             continueLabel = continueLabel(viewModel.step, viewModel.storeName),
+                            showsSkip = viewModel.step.isProductTour,
                             onContinue = { viewModel.advance(onComplete) },
                             onBack = viewModel::goBack,
+                            onSkip = viewModel::skipProductTour,
                         )
                     }
                 }
+            }
+        }
+
+        // Formulario real do primeiro produto, por cima das boas-vindas. Cada abertura tem o proprio estado.
+        val formStoreID = viewModel.storeID
+        if (formAttempt != null && formStoreID != null) {
+            Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+                ProductFormScreen(
+                    storeID = formStoreID,
+                    productID = null,
+                    initialFocus = null,
+                    onClose = viewModel::productFormClosed,
+                    viewModel = androidx.lifecycle.viewmodel.compose.viewModel<ProductFormsViewModel>(
+                        key = "welcomeProductForm$formAttempt",
+                    ),
+                )
             }
         }
 
@@ -241,22 +265,26 @@ fun WelcomeScreen(
 @Composable
 private fun stepTitle(step: WelcomeStep): String = when (step) {
     WelcomeStep.Start -> stringResource(R.string.welcome_step_start_title)
-    WelcomeStep.About -> stringResource(R.string.welcome_step_about_title)
     WelcomeStep.Store -> stringResource(R.string.welcome_step_store_title)
+    WelcomeStep.Product -> stringResource(R.string.welcome_step_product_title)
+    WelcomeStep.Variants -> stringResource(R.string.welcome_step_variants_title)
     WelcomeStep.Ready -> stringResource(R.string.welcome_step_ready_title)
 }
 
 @Composable
-private fun stepSubtitle(step: WelcomeStep): String? = when (step) {
+private fun stepSubtitle(step: WelcomeStep): String = when (step) {
     WelcomeStep.Start -> stringResource(R.string.welcome_step_start_subtitle)
-    WelcomeStep.About -> null
     WelcomeStep.Store -> stringResource(R.string.welcome_step_store_subtitle)
+    WelcomeStep.Product -> stringResource(R.string.welcome_step_product_subtitle)
+    WelcomeStep.Variants -> stringResource(R.string.welcome_step_variants_subtitle)
     WelcomeStep.Ready -> stringResource(R.string.welcome_step_ready_subtitle)
 }
 
 @Composable
 private fun continueLabel(step: WelcomeStep, storeName: String): String = when {
     step == WelcomeStep.Store && storeName.isBlank() -> stringResource(R.string.welcome_button_skip)
+    step == WelcomeStep.Product -> stringResource(R.string.welcome_button_addNow)
+    step == WelcomeStep.Variants -> stringResource(R.string.welcome_button_addProduct)
     step == WelcomeStep.Ready -> stringResource(R.string.welcome_button_finish)
     else -> stringResource(R.string.welcome_button_continue)
 }
@@ -265,9 +293,9 @@ private fun continueLabel(step: WelcomeStep, storeName: String): String = when {
 
 /** Barra de etapas em capsulas; a atual fica mais longa. */
 @Composable
-private fun WelcomeProgressBar(step: WelcomeStep) {
-    val total = WelcomeStep.entries.size
-    val current = step.ordinal + 1
+private fun WelcomeProgressBar(steps: List<WelcomeStep>, step: WelcomeStep) {
+    val total = steps.size
+    val current = steps.indexOf(step) + 1
     val label = stringResource(R.string.a11y_welcome_progress, current, total)
     Row(
         Modifier
@@ -295,7 +323,7 @@ private fun WelcomeProgressBar(step: WelcomeStep) {
 
 /** Emoji num circulo com tom da cor de destaque, titulo e subtitulo da etapa. */
 @Composable
-private fun WelcomeStepHeader(step: WelcomeStep, title: String, subtitle: String?) {
+private fun WelcomeStepHeader(step: WelcomeStep, title: String, subtitle: String) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -320,14 +348,14 @@ private fun WelcomeStepHeader(step: WelcomeStep, title: String, subtitle: String
             lineHeight = 40.sp,
             modifier = Modifier.semantics { heading() },
         )
-        if (subtitle != null) {
-            Text(
-                subtitle,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
-        }
+        Text(
+            subtitle,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            // No Inicio a frase fica estreita, pouco mais larga que o botao Comecar.
+            modifier = if (step == WelcomeStep.Start) Modifier.widthIn(max = 300.dp) else Modifier,
+        )
     }
 }
 
@@ -358,6 +386,7 @@ private fun WelcomeContextPanel(
     onContinue: () -> Unit,
     onBack: () -> Unit,
     onRestore: () -> Unit,
+    onSkip: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val isStart = step == WelcomeStep.Start
@@ -394,6 +423,7 @@ private fun WelcomeContextPanel(
                     fontWeight = FontWeight.SemiBold, fontSize = 17.sp,
                 )
             }
+            if (step.isProductTour) SkipButton(onSkip)
         }
         // No Inicio um espaco igual ao de cima centraliza os botoes.
         if (isStart) Spacer(Modifier.weight(1f))
@@ -401,7 +431,13 @@ private fun WelcomeContextPanel(
 }
 
 @Composable
-private fun FooterButtons(continueLabel: String, onContinue: () -> Unit, onBack: () -> Unit) {
+private fun FooterButtons(
+    continueLabel: String,
+    showsSkip: Boolean,
+    onContinue: () -> Unit,
+    onBack: () -> Unit,
+    onSkip: () -> Unit,
+) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -415,6 +451,15 @@ private fun FooterButtons(continueLabel: String, onContinue: () -> Unit, onBack:
         AppSecondaryButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.welcome_button_back), fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
         }
+        if (showsSkip) SkipButton(onSkip)
+    }
+}
+
+/** Pular das dicas do primeiro produto: vai direto para o fim. */
+@Composable
+private fun SkipButton(onSkip: () -> Unit) {
+    TextButton(onClick = onSkip, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+        Text(stringResource(R.string.welcome_button_skip), fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
     }
 }
 
@@ -446,29 +491,73 @@ private fun WelcomeStartStep(onStart: () -> Unit, onRestore: () -> Unit, showsBu
     }
 }
 
+/** Dica do que o formulario pede, antes de abrir o de verdade. */
 @Composable
-private fun WelcomeAboutStep(showsHeader: Boolean) {
+private fun WelcomeProductStep(showsHeader: Boolean) {
     StepScroll {
         // No layout largo o cabecalho fica no painel da esquerda.
         if (showsHeader) {
-            WelcomeStepHeader(WelcomeStep.About, stringResource(R.string.welcome_step_about_title), null)
+            WelcomeStepHeader(WelcomeStep.Product, stepTitle(WelcomeStep.Product), stepSubtitle(WelcomeStep.Product))
             Spacer(Modifier.size(20.dp))
         }
         AppGroupedCard(
             dividerInset = 66.dp,
             rows = listOf(
-                { Feature(AppIcons.Box, Color(0xFFFF9500), R.string.welcome_about_products_title, R.string.welcome_about_products_desc) },
-                { Feature(Icons.Filled.DateRange, Color(0xFF007AFF), R.string.welcome_about_orders_title, R.string.welcome_about_orders_desc) },
-                { Feature(AppIcons.BarChart, Color(0xFF34C759), R.string.welcome_about_reports_title, R.string.welcome_about_reports_desc) },
-                { Feature(AppIcons.Storefront, Color(0xFFAF52DE), R.string.welcome_about_stores_title, R.string.welcome_about_stores_desc) },
-                { Feature(Icons.Filled.Lock, Color(0xFF32ADE6), R.string.welcome_about_icloud_title, R.string.welcome_about_icloud_desc) },
+                { TipRow(AppIcons.Camera, Color(0xFFFF9500), R.string.welcome_product_photo_title, R.string.welcome_product_photo_desc) },
+                { TipRow(AppIcons.Money, Color(0xFF34C759), R.string.welcome_product_price_title, R.string.welcome_product_price_desc) },
+                { TipRow(AppIcons.Box, Color(0xFF007AFF), R.string.welcome_product_stock_title, R.string.welcome_product_stock_desc) },
             ),
         )
     }
 }
 
+/** Com ou sem variacoes, com o exemplo dos tamanhos de uma camiseta. */
 @Composable
-private fun Feature(icon: ImageVector, color: Color, title: Int, desc: Int) {
+private fun WelcomeVariantsStep(showsHeader: Boolean) {
+    val sizes = stringResource(R.string.welcome_variants_sizes).split(",")
+    StepScroll {
+        if (showsHeader) {
+            WelcomeStepHeader(WelcomeStep.Variants, stepTitle(WelcomeStep.Variants), stepSubtitle(WelcomeStep.Variants))
+            Spacer(Modifier.size(20.dp))
+        }
+        AppGroupedCard(
+            dividerInset = 66.dp,
+            rows = listOf(
+                {
+                    TipRow(AppIcons.Layers, Color(0xFFAF52DE), R.string.welcome_variants_with_title, R.string.welcome_variants_with_desc) {
+                        SizeChips(sizes.zip(listOf(3, 5, 2)))
+                    }
+                },
+                { TipRow(Icons.Filled.Check, Color(0xFF8E8E93), R.string.welcome_variants_without_title, R.string.welcome_variants_without_desc) },
+            ),
+        )
+    }
+}
+
+/** P, M e G com a quantidade de cada um, so ilustrando. */
+@Composable
+private fun SizeChips(sizes: List<Pair<String, Int>>) {
+    Row(
+        Modifier.padding(top = 6.dp).clearAndSetSemantics { },
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        for ((size, quantity) in sizes) {
+            Text(
+                "$size · $quantity",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+            )
+        }
+    }
+}
+
+/** Icone colorido, titulo e uma frase curta, como nas apresentacoes do sistema. */
+@Composable
+private fun TipRow(icon: ImageVector, color: Color, title: Int, desc: Int, accessory: @Composable () -> Unit = {}) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -480,6 +569,7 @@ private fun Feature(icon: ImageVector, color: Color, title: Int, desc: Int) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(stringResource(title), fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
             Text(stringResource(desc), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            accessory()
         }
     }
 }

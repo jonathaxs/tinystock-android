@@ -9,8 +9,6 @@
 
     <string name="backup_error_legacy">Este backup é de uma versão antiga do TinyStock. Abra no iPhone, exporte de novo e importe o arquivo novo.</string>
 
-    <string name="welcome_about_icloud_desc">Seus dados ficam no aparelho, com backups que você guarda onde quiser.</string>
-
     <string name="a11y_decrease">Diminuir</string>
     <string name="a11y_increase">Aumentar</string>
     <string name="a11y_delete">Apagar</string>

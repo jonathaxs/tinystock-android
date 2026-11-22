@@ -24,9 +24,20 @@ import java.util.UUID
 /** Etapas das boas-vindas, na ordem. */
 enum class WelcomeStep(val emoji: String) {
     Start("📦"),
-    About("✨"),
     Store("🛍️"),
+    Product("🏷️"),
+    Variants("🎨"),
     Ready("🚀"),
+    ;
+
+    /** Dicas do primeiro produto: tem o Pular, que vai direto para o fim. */
+    val isProductTour: Boolean get() = this == Product || this == Variants
+
+    companion object {
+        /** Etapas mostradas. A parte do produto fica de fora quando a loja ja tem produtos (reaberta pelo Sobre). */
+        fun flow(includesProductTour: Boolean): List<WelcomeStep> =
+            if (includesProductTour) entries.toList() else listOf(Start, Store, Ready)
+    }
 }
 
 /**
@@ -39,6 +50,8 @@ class WelcomeViewModel(application: Application) : AndroidViewModel(application)
     private val store = container.store
     private val defaultName = application.getString(R.string.store_default_name)
 
+    var steps by mutableStateOf(WelcomeStep.flow(includesProductTour = true))
+        private set
     var step by mutableStateOf(WelcomeStep.Start)
         private set
     var isGoingForward by mutableStateOf(true)
@@ -57,33 +70,71 @@ class WelcomeViewModel(application: Application) : AndroidViewModel(application)
     var isRestoring by mutableStateOf(false)
         private set
 
+    /** Loja atual, para o formulario real do primeiro produto. */
+    var storeID by mutableStateOf<UUID?>(null)
+        private set
+    /** Formulario do primeiro produto aberto pela dica de variacoes; a contagem muda a cada abertura. */
+    var productFormAttempt by mutableStateOf<Int?>(null)
+        private set
+    private var productCountBeforeForm = 0
+    private var formAttempts = 0
+
     init {
-        // Um nome ja trocado aparece no campo; o padrao fica so como dica.
         viewModelScope.launch {
             val id = container.preferences.load() ?: return@launch
+            storeID = id
+            // Reaberta pelo Sobre com produtos na loja: as dicas do primeiro produto ficam de fora.
+            if (store.products(id).isNotEmpty()) steps = WelcomeStep.flow(includesProductTour = false)
+            // Um nome ja trocado aparece no campo; o padrao fica so como dica.
             val name = store.store(id)?.name ?: return@launch
             if (name != defaultName && storeName.isEmpty()) storeName = name
         }
     }
 
-    /** Avanca uma etapa. Na ultima, chama [onFinish]. Na etapa da loja, grava o nome antes. */
+    /**
+     * Avanca uma etapa. Na ultima, chama [onFinish]. Na etapa da loja, grava o nome antes; na dica de
+     * variacoes, abre o formulario do produto.
+     */
     fun advance(onFinish: () -> Unit) {
         viewModelScope.launch {
             if (step == WelcomeStep.Store && !saveStoreName()) return@launch
-            val next = WelcomeStep.entries.getOrNull(step.ordinal + 1)
-            if (next == null) {
-                onFinish()
-            } else {
-                isGoingForward = true
-                step = next
+            if (step == WelcomeStep.Variants) {
+                openProductForm()
+                return@launch
             }
+            val next = steps.getOrNull(steps.indexOf(step) + 1)
+            if (next == null) onFinish() else go(next, forward = true)
         }
     }
 
     fun goBack() {
-        val previous = WelcomeStep.entries.getOrNull(step.ordinal - 1) ?: return
-        isGoingForward = false
-        step = previous
+        val previous = steps.getOrNull(steps.indexOf(step) - 1) ?: return
+        go(previous, forward = false)
+    }
+
+    fun skipProductTour() {
+        go(WelcomeStep.Ready, forward = true)
+    }
+
+    private fun go(next: WelcomeStep, forward: Boolean) {
+        isGoingForward = forward
+        step = next
+    }
+
+    private suspend fun openProductForm() {
+        val id = storeID ?: return
+        productCountBeforeForm = store.products(id).size
+        formAttempts += 1
+        productFormAttempt = formAttempts
+    }
+
+    /** Produto salvo segue para o fim; cancelado fica na dica para tentar de novo ou pular. */
+    fun productFormClosed() {
+        productFormAttempt = null
+        val id = storeID ?: return
+        viewModelScope.launch {
+            if (store.products(id).size > productCountBeforeForm) go(WelcomeStep.Ready, forward = true)
+        }
     }
 
     fun dismissStoreError() {
