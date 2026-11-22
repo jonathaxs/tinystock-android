@@ -144,6 +144,7 @@ fun ProductCatalogGrid(
                 imageFileName = product.imageFileName,
                 title = product.name,
                 detail = quantity,
+                morphKey = product.id.toString(),
                 modifier = Modifier
                     .clickable(role = Role.Button, onClickLabel = hint) {
                         haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
@@ -241,7 +242,13 @@ private fun quantityText(quantity: Number): String =
 
 /** Foto quadrada, nome (ate 2 linhas) e estoque embaixo. */
 @Composable
-private fun CatalogGridTile(imageFileName: String?, title: String, detail: String, modifier: Modifier = Modifier) {
+private fun CatalogGridTile(
+    imageFileName: String?,
+    title: String,
+    detail: String,
+    modifier: Modifier = Modifier,
+    morphKey: String? = null,
+) {
     Column(
         modifier
             .fillMaxWidth()
@@ -250,7 +257,7 @@ private fun CatalogGridTile(imageFileName: String?, title: String, detail: Strin
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         BoxWithConstraints(Modifier.fillMaxWidth()) {
-            ProductImage(imageFileName, side = maxWidth)
+            ProductImage(imageFileName, side = maxWidth, modifier = Modifier.catalogMorph(morphKey?.let { "image-$it" }))
         }
         Text(
             text = title,
@@ -259,7 +266,9 @@ private fun CatalogGridTile(imageFileName: String?, title: String, detail: Strin
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
-            modifier = Modifier.clearAndSetSemantics { },
+            modifier = Modifier
+                .catalogMorph(morphKey?.let { "name-$it" })
+                .clearAndSetSemantics { },
         )
         Text(
             text = detail,

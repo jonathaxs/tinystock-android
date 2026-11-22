@@ -4,12 +4,12 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.animateBounds
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -56,6 +56,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -226,6 +227,7 @@ fun HomeScreen(
 }
 
 /** Catalogo: busca, produtos ou variacoes, em lista ou grade. */
+@OptIn(ExperimentalSharedTransitionApi::class)
 private fun LazyListScope.catalogItems(
     data: HomeData,
     filtered: List<Product>,
@@ -252,19 +254,21 @@ private fun LazyListScope.catalogItems(
     if (filtered.isEmpty()) {
         item("noResults") { NoResults(search) }
     } else if (mode == CatalogMode.Products) {
-        // Lista e grade dos produtos trocam com esmaecer e leve zoom (some com animacoes desligadas).
+        // Na troca lista/grade a foto e o nome de cada produto se transformam (some com animacoes desligadas).
         item("products") {
-            AnimatedContent(
-                targetState = viewMode,
-                transitionSpec = {
-                    (fadeIn(tween(250)) + scaleIn(tween(250), initialScale = 0.96f)) togetherWith fadeOut(tween(150))
-                },
-                label = "catalogViewMode",
-            ) { shownMode ->
-                if (shownMode == CatalogViewMode.Grid) {
-                    ProductCatalogGrid(filtered, data.variants, onProductAction)
-                } else {
-                    ProductList(data, filtered, onProductAction, editing)
+            SharedTransitionLayout {
+                AnimatedContent(
+                    targetState = viewMode,
+                    transitionSpec = { fadeIn(tween(250)) togetherWith fadeOut(tween(150)) },
+                    label = "catalogViewMode",
+                ) { shownMode ->
+                    CompositionLocalProvider(LocalCatalogMorph provides CatalogMorphScopes(this@SharedTransitionLayout, this)) {
+                        if (shownMode == CatalogViewMode.Grid) {
+                            ProductCatalogGrid(filtered, data.variants, onProductAction)
+                        } else {
+                            ProductList(data, filtered, onProductAction, editing)
+                        }
+                    }
                 }
             }
         }
@@ -646,9 +650,14 @@ private fun ProductRow(product: Product, variants: List<ProductVariant>, onActio
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        ProductImage(product.imageFileName)
+        ProductImage(product.imageFileName, modifier = Modifier.catalogMorph("image-${product.id}"))
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(product.name, fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+            Text(
+                product.name,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 17.sp,
+                modifier = Modifier.catalogMorph("name-${product.id}"),
+            )
             Text(
                 stringResource(R.string.products_catalog_quantity, quantity),
                 style = MaterialTheme.typography.bodyMedium,
