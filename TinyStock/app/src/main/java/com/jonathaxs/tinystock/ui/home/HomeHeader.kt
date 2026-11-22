@@ -4,6 +4,7 @@ import android.provider.Settings
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,12 +42,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -78,6 +81,7 @@ import com.jonathaxs.tinystock.ui.components.StoreImage
 import com.jonathaxs.tinystock.ui.components.appCard
 import com.jonathaxs.tinystock.ui.icons.AppIcons
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.time.Instant
 
@@ -208,6 +212,9 @@ fun HomeHero(
     }
 
     var showsInfo by rememberSaveable { mutableStateOf(false) }
+    // Quicada da caixa ao tocar: encolhe um pouco e volta com mola.
+    val bounce = remember { Animatable(1f) }
+    val scope = rememberCoroutineScope()
     val a11y = stringResource(
         R.string.home_box_a11y,
         summary.products, summary.units, summary.production, summary.readyToShip, summary.shipped,
@@ -228,12 +235,27 @@ fun HomeHero(
                 ),
                 growth = growth.value,
                 modifier = Modifier
+                    .graphicsLayer {
+                        scaleX = bounce.value
+                        scaleY = bounce.value
+                    }
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
                         role = Role.Button,
                         onClickLabel = hint,
-                    ) { showsInfo = true }
+                    ) {
+                        showsInfo = true
+                        val animationsOff = Settings.Global.getFloat(
+                            context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f,
+                        ) == 0f
+                        if (!animationsOff) {
+                            scope.launch {
+                                bounce.animateTo(0.92f, tween(90))
+                                bounce.animateTo(1f, spring(dampingRatio = 0.35f, stiffness = Spring.StiffnessMediumLow))
+                            }
+                        }
+                    }
                     .semantics { contentDescription = a11y },
             )
             AppPopover(expanded = showsInfo, onDismiss = { showsInfo = false }, width = 320.dp) {
