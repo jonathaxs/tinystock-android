@@ -509,7 +509,11 @@
     <string name="welcome_variants_without_title">Sem variações</string>
     <string name="welcome_variants_without_desc">Um produto de um jeito só. No formulário, desligue Possui variações.</string>
     <string name="welcome_step_ready_title">Tudo pronto</string>
-    <string name="welcome_step_ready_subtitle">Ative os lembretes para não perder os prazos de produção e envio. Recusar não bloqueia nada.</string>
+    <string name="welcome_step_ready_subtitle">Antes de começar, veja onde acompanhar as vendas e os prazos.</string>
+    <string name="welcome_ready_reports_title">Relatórios</string>
+    <string name="welcome_ready_reports_desc">Vendas, lucro e o que mais sai.</string>
+    <string name="welcome_ready_calendar_title">Calendário</string>
+    <string name="welcome_ready_calendar_desc">Prazos de produção e envio.</string>
     <string name="welcome_ready_notifications_title">Lembretes de pedidos</string>
     <string name="welcome_ready_notifications_desc">Avisos na véspera, no dia e quando um pedido atrasar.</string>
     <string name="welcome_ready_allow">Permitir</string>

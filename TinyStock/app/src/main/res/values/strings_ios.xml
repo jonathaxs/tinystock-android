@@ -509,7 +509,11 @@
     <string name="welcome_variants_without_title">Without variations</string>
     <string name="welcome_variants_without_desc">A product that comes one way only. In the form, turn off Has variations.</string>
     <string name="welcome_step_ready_title">All Set</string>
-    <string name="welcome_step_ready_subtitle">Turn on reminders so you never miss production and shipping dates. Declining won\'t block anything.</string>
+    <string name="welcome_step_ready_subtitle">Before you start, here\'s where to follow your sales and deadlines.</string>
+    <string name="welcome_ready_reports_title">Reports</string>
+    <string name="welcome_ready_reports_desc">Sales, profit and best sellers.</string>
+    <string name="welcome_ready_calendar_title">Calendar</string>
+    <string name="welcome_ready_calendar_desc">Production and shipping dates.</string>
     <string name="welcome_ready_notifications_title">Order reminders</string>
     <string name="welcome_ready_notifications_desc">Alerts the day before, on the day and when an order is late.</string>
     <string name="welcome_ready_allow">Allow</string>

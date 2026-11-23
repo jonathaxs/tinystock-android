@@ -12,6 +12,13 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -331,15 +338,17 @@ private fun WelcomeStepHeader(step: WelcomeStep, title: String, subtitle: String
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        // No Tudo pronto o emoji fica menor, para os cartoes e os botoes caberem sem rolar.
+        val side = if (step == WelcomeStep.Ready) 64 else 88
         Box(
             Modifier
                 .padding(bottom = 4.dp)
-                .size(88.dp)
+                .size(side.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
                 .clearAndSetSemantics { },
             contentAlignment = Alignment.Center,
-        ) { Text(step.emoji, fontSize = 44.sp) }
+        ) { Text(step.emoji, fontSize = (side / 2).sp) }
         Text(
             title,
             fontSize = 34.sp,
@@ -616,7 +625,7 @@ private fun WelcomeStoreStep(name: String, onNameChange: (String) -> Unit, onSub
 
 private enum class PermissionState { Idle, Allowed, Denied }
 
-/** Pedido opcional dos lembretes de producao e despacho. Recusar nao bloqueia nada (como no iOS). */
+/** Onde ver relatorios e calendario, e o pedido opcional dos lembretes. Recusar nao bloqueia nada (como no iOS). */
 @Composable
 private fun WelcomeReadyStep(showsHeader: Boolean) {
     val context = LocalContext.current
@@ -647,6 +656,25 @@ private fun WelcomeReadyStep(showsHeader: Boolean) {
             )
             Spacer(Modifier.size(20.dp))
         }
+        // Lado a lado; com letras grandes um embaixo do outro.
+        val reports: @Composable (Modifier) -> Unit = { m ->
+            FeatureCard(R.string.welcome_ready_reports_title, R.string.welcome_ready_reports_desc, m) { MiniChart() }
+        }
+        val calendar: @Composable (Modifier) -> Unit = { m ->
+            FeatureCard(R.string.welcome_ready_calendar_title, R.string.welcome_ready_calendar_desc, m) { MiniCalendar() }
+        }
+        if (LocalDensity.current.fontScale >= 1.5f) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                reports(Modifier.fillMaxWidth())
+                calendar(Modifier.fillMaxWidth())
+            }
+        } else {
+            Row(Modifier.height(IntrinsicSize.Max), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                reports(Modifier.weight(1f).fillMaxHeight())
+                calendar(Modifier.weight(1f).fillMaxHeight())
+            }
+        }
+        Spacer(Modifier.size(20.dp))
         PermissionCard(
             icon = Icons.Filled.Notifications,
             iconColor = Color(0xFFFF3B30),
@@ -663,6 +691,91 @@ private fun WelcomeReadyStep(showsHeader: Boolean) {
                 }
             },
         )
+    }
+}
+
+/** Ilustracao num quadro com a cor de destaque, titulo e uma frase curta. A ilustracao e so enfeite. */
+@Composable
+private fun FeatureCard(title: Int, desc: Int, modifier: Modifier, illustration: @Composable () -> Unit) {
+    val accent = MaterialTheme.colorScheme.primary
+    Column(
+        modifier
+            .appCard()
+            .padding(10.dp)
+            .semantics(mergeDescendants = true) { },
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(accent.copy(alpha = 0.12f))
+                .padding(12.dp)
+                .clearAndSetSemantics { },
+        ) { illustration() }
+        Column(Modifier.padding(horizontal = 4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(stringResource(title), fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+            Text(stringResource(desc), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+/** Uma semana de vendas de mentira, em barras; a mais alta fica em destaque. */
+@Composable
+private fun MiniChart() {
+    val accent = MaterialTheme.colorScheme.primary
+    val values = remember { listOf(3f, 5f, 2f, 6f, 4f, 8f, 5f) }
+    Canvas(Modifier.fillMaxSize()) {
+        val gap = 5.dp.toPx()
+        val barWidth = (size.width - gap * (values.size - 1)) / values.size
+        val max = values.max()
+        values.forEachIndexed { index, value ->
+            val barHeight = size.height * value / max
+            drawRoundRect(
+                color = accent.copy(alpha = if (value == max) 1f else 0.45f),
+                topLeft = Offset(index * (barWidth + gap), size.height - barHeight),
+                size = Size(barWidth, barHeight),
+                cornerRadius = CornerRadius(3.dp.toPx()),
+            )
+        }
+    }
+}
+
+/** Duas semanas de um mes, com o dia de hoje marcado e alguns prazos em pontinhos. */
+@Composable
+private fun MiniCalendar() {
+    val accent = MaterialTheme.colorScheme.primary
+    val marked = remember {
+        mapOf(3 to Color(0xFF30B0C7), 7 to Color(0xFFFF9500), 9 to Color(0xFF30B0C7), 12 to Color(0xFF8E8E93))
+    }
+    // Tamanho fixo de proposito: e um desenho, e precisa caber no cartao estreito do celular.
+    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceEvenly) {
+        for (week in 0 until 2) {
+            Row(Modifier.fillMaxWidth()) {
+                for (weekday in 1..7) {
+                    val day = week * 7 + weekday
+                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            Modifier
+                                .size(18.dp)
+                                .then(if (day == 7) Modifier.background(accent, CircleShape) else Modifier),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                "$day",
+                                fontSize = with(LocalDensity.current) { 10.dp.toSp() },
+                                fontWeight = if (day == 7) FontWeight.Bold else FontWeight.Medium,
+                                color = if (day == 7) Color.White else MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                            )
+                        }
+                        Spacer(Modifier.size(3.dp))
+                        Box(Modifier.size(5.dp).background(marked[day] ?: Color.Transparent, CircleShape))
+                    }
+                }
+            }
+        }
     }
 }
 
